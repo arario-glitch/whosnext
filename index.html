@@ -286,20 +286,15 @@
       const container = document.getElementById('detail-items-list');
       container.innerHTML = '';
       
-      // 당첨 결과 텍스트에서 이모지와 공백을 제외한 실제 당첨 항목 추출 (예: "🏠 몽벨리" -> "몽벨리")
-      let winnerAnswer = "";
-      if (itemObj.result) {
-        const parts = itemObj.result.trim().split(' ');
-        winnerAnswer = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
-      }
+      const resultStr = itemObj.result || "";
 
       if (itemObj.allEntries) {
         const allEntries = itemObj.allEntries;
         names.forEach((name, i) => {
           const userItems = allEntries[i] || [];
           if (userItems.length > 0) {
-            // 당첨된 항목 옆에 폭죽(🎉) 이모지 팡파레 추가!
-            const formattedItems = userItems.map(val => val === winnerAnswer ? `${val} 🎉` : val).join(', ');
+            // 항목(val)이 결과 문자열(resultStr)에 포함되어 있으면 무조건 폭죽(🎉) 장착!
+            const formattedItems = userItems.map(val => resultStr.includes(val) ? `${val} 🎉` : val).join(', ');
             container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${formattedItems}</span></div>`;
           } else {
             container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>-</span></div>`;
@@ -309,7 +304,7 @@
         const opts = itemObj.opts;
         names.forEach((name, i) => {
           const val = opts[i] || '-';
-          const formattedVal = val === winnerAnswer ? `${val} 🎉` : val;
+          const formattedVal = (val !== '-' && resultStr.includes(val)) ? `${val} 🎉` : val;
           container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${formattedVal}</span></div>`;
         });
       } else {
