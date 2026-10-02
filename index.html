@@ -300,9 +300,14 @@
         <div class="profile"><img id="img-opt3" src="https://i.ibb.co/XZ2X0Lyq/image.png"><span>퍙퍙</span><input type="text" id="opt3" placeholder="입력"></div>
         <div class="profile"><img id="img-opt4" src="https://i.ibb.co/nVW3JVQ/image.png"><span>가가</span><input type="text" id="opt4" placeholder="입력"></div>
       </div>
-      <div id="roulette-container">
+      div id="roulette-container">
         <div class="pointer"></div>
         <canvas id="wheel" width="250" height="250"></canvas>
+      </div>
+
+      <!-- 🎰 [변신 포인트] 평소엔 숨어있다가 룰렛이 끝날 때 팡 하고 튀어나오는 슬롯머신 박스! -->
+      <div id="slot-container" style="display:none; width: 240px; height: 100px; margin: 24px auto; background: #1e293b; border-radius: 20px; border: 4px solid #a29bfe; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div id="slot-text" style="font-size: 24px; font-weight: 900; color: #55efc4; font-family: 'Orbit', monospace; letter-spacing: 2px;">🎰 DRUM SPIN...</div>
       </div>
       <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
       <div class="modal-btns">
@@ -579,69 +584,93 @@
       if(!theme || opts.includes('')) { showAlert("주제와 4명의 의견을 모두 채워주세요!"); return; }
 
       isSpinning = true;
+
+      // 초기화: 룰렛 보이게, 슬롯머신 숨기기
+      document.getElementById('roulette-container').style.display = 'block';
+      document.getElementById('slot-container').style.display = 'none';
+
       const randomDegree = Math.floor(Math.random() * 360);
-      const totalRotation = currentRotation + 3600 + randomDegree;
+      const totalRotation = currentRotation + 2500 + randomDegree;
       currentRotation = totalRotation;
       canvas.style.transform = `rotate(${totalRotation}deg)`;
       
+      // ⏱️ [반전 타이밍] 룰렛이 끝나기 직전(2초 뒤), 갑자기 슬롯머신으로 변신!
       setTimeout(() => {
-        const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
-        const winnerIndex = Math.floor(pointerAngle / 90);
-        const winnerName = names[winnerIndex];
-        const winnerAnswer = opts[winnerIndex];
-
-        let emoji = '🎯'; 
-        const t = theme.toLowerCase();
-        if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
-        else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
-        else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️'; }
-        else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
-        else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
-        else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
-
-        const resultString = `${winnerAnswer}`; 
         document.getElementById('roulette-container').style.display = 'none';
-        document.getElementById('winner-display').style.display = 'block';
-        document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src;
-        document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
+        document.getElementById('slot-container').style.display = 'flex';
         
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        
-        const finalResult = `${emoji} ${resultString}`;
-        const newItem = { theme: theme, result: finalResult, opts: opts };
+        const slotEl = document.getElementById('slot-text');
+        let count = 0;
+        const slotInterval = setInterval(() => {
+          const randomName = names[Math.floor(Math.random() * names.length)];
+          slotEl.innerHTML = `🎰 ${randomName}?!`;
+          count++;
+        }, 80);
 
-        const now = new Date();
-        const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        // 슬롯머신이 드르륵 하다가 최종 당첨자 확정! (1초 뒤)
+        setTimeout(() => {
+          clearInterval(slotInterval);
 
-        const logData = {
-          timestamp: timestampStr,
-          category: currentCategory,
-          tripName: currentTripName || '',
-          theme: theme,
-          winnerName: winnerName,
-          result: finalResult,
-          opts: opts
-        };
-        const logListRef = window.fRef(window.fDb, 'travelApp/logs');
-        const newLogRef = window.fPush(logListRef);
-        window.fSet(newLogRef, logData);
+          const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
+          const winnerIndex = Math.floor(pointerAngle / 90);
+          const winnerName = names[winnerIndex];
+          const winnerAnswer = opts[winnerIndex];
 
-        if (currentCategory === '여행') {
-          if (!appData.trips[currentTripName].items) appData.trips[currentTripName].items = [];
-          appData.trips[currentTripName].items.push(newItem);
-          const tripItemsRef = window.fRef(window.fDb, `travelApp/trips/${currentTripName}/items`);
-          window.fSet(tripItemsRef, appData.trips[currentTripName].items);
-          openTripDetail(currentTripName);
-        } else {
-          if (!appData.daily) appData.daily = [];
-          appData.daily.push(newItem);
-          const dailyRef = window.fRef(window.fDb, `travelApp/daily`);
-          window.fSet(dailyRef, appData.daily);
-          openDaily();
-        }
+          let emoji = '🎯'; 
+          const t = theme.toLowerCase();
+          if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
+          else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
+          else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️️'; }
+          else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
+          else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
+          else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
 
-        isSpinning = false;
-      }, 3000);
+          const resultString = `${winnerAnswer}`; 
+          
+          document.getElementById('slot-container').style.display = 'none';
+          document.getElementById('winner-display').style.display = 'block';
+          document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src;
+          document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
+          
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+          
+          const finalResult = `${emoji} ${resultString}`;
+          const newItem = { theme: theme, result: finalResult, opts: opts };
+
+          const now = new Date();
+          const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+          const logData = {
+            timestamp: timestampStr,
+            category: currentCategory,
+            tripName: currentTripName || '',
+            theme: theme,
+            winnerName: winnerName,
+            result: finalResult,
+            opts: opts
+          };
+          const logListRef = window.fRef(window.fDb, 'travelApp/logs');
+          const newLogRef = window.fPush(logListRef);
+          window.fSet(newLogRef, logData);
+
+          if (currentCategory === '여행') {
+            if (!appData.trips[currentTripName].items) appData.trips[currentTripName].items = [];
+            appData.trips[currentTripName].items.push(newItem);
+            const tripItemsRef = window.fRef(window.fDb, `travelApp/trips/${currentTripName}/items`);
+            window.fSet(tripItemsRef, appData.trips[currentTripName].items);
+            openTripDetail(currentTripName);
+          } else {
+            if (!appData.daily) appData.daily = [];
+            appData.daily.push(newItem);
+            const dailyRef = window.fRef(window.fDb, `travelApp/daily`);
+            window.fSet(dailyRef, appData.daily);
+            openDaily();
+          }
+
+          isSpinning = false;
+        }, 1000);
+
+      }, 2000);
     }
 
     function showAlert(msg) {
