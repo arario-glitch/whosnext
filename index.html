@@ -6,7 +6,6 @@
   <title>👽도파민 중독자👽</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Firebase SDK 모듈 로드 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -38,203 +37,81 @@
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     @import url('https://fonts.googleapis.com/css2?family=Orbit&display=swap');
 
-    * { 
-      box-sizing: border-box; 
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; font-family: "Pretendard", sans-serif; -webkit-tap-highlight-color: transparent; }
     
-    body { 
-      text-align: center; 
-      background: #f1f4f9; 
-      margin: 0; 
-      padding: 24px 16px; 
-      color: #2d3436;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    h2 { 
-      font-size: 22px; 
-      font-weight: 700; 
-      color: #1e293b; 
-      margin-bottom: 24px; 
-      letter-spacing: -0.5px;
-    }
+    body { text-align: center; background: #f1f4f9; margin: 0; padding: 24px 16px; color: #2d3436; display: flex; justify-content: center; min-height: 100vh; }
+    h2 { font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 24px; letter-spacing: -0.5px; }
     
-    .screen { 
-      display: none; 
-      width: 100%; 
-      max-width: 420px; 
-      margin: 0 auto; 
-    }
-    .screen.active { 
-      display: block; 
-      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-    }
-    @keyframes fadeIn { 
-      from { opacity: 0; transform: translateY(8px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
+    .screen { display: none; width: 100%; max-width: 420px; margin: 0 auto; }
+    .screen.active { display: block; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .main-img { 
-      width: 240px; 
-      height: 240px; 
-      border-radius: 28px; 
-      object-fit: cover; 
-      cursor: pointer; 
-      box-shadow: 0 16px 32px rgba(108, 92, 231, 0.15); 
-      transition: all 0.3s ease;
-      border: 4px solid #ffffff;
-    }
-    .main-img:hover { 
-      transform: translateY(-4px) scale(1.02); 
-      box-shadow: 0 20px 40px rgba(108, 92, 231, 0.25);
-    }
+    .main-img { width: 240px; height: 240px; border-radius: 28px; object-fit: cover; cursor: pointer; box-shadow: 0 16px 32px rgba(108, 92, 231, 0.15); transition: all 0.3s ease; border: 4px solid #ffffff; }
+    .main-img:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 20px 40px rgba(108, 92, 231, 0.25); }
 
-    .btn { 
-      padding: 14px 20px; 
-      font-size: 15px; 
-      font-weight: 600; 
-      margin: 6px; 
-      cursor: pointer; 
-      background: white;
-      color: #1e293b; 
-      border: none; 
-      border-radius: 16px; 
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04); 
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
+    .btn { padding: 14px 20px; font-size: 15px; font-weight: 600; margin: 6px; cursor: pointer; background: white; color: #1e293b; border: none; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
     .btn:active { transform: scale(0.96); }
     .btn:hover { filter: brightness(0.98); }
 
-    .btn-add { 
-      background: linear-gradient(135deg, #6c5ce7, #8e44ad) !important; 
-      color: white !important; 
-      margin-top: 16px; 
-      width: 100%; 
-      border-radius: 16px; 
-      padding: 15px;
-      font-size: 16px;
-      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3) !important;
-    }
+    .btn-add { background: linear-gradient(135deg, #6c5ce7, #8e44ad) !important; color: white !important; margin-top: 16px; width: 100%; border-radius: 16px; padding: 15px; font-size: 16px; box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3) !important; }
 
-    .list-box { 
-      background: white; 
-      padding: 20px; 
-      border-radius: 20px; 
-      text-align: left; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.03); 
-      border: 1px solid rgba(226, 232, 240, 0.8);
-    }
-    
-    .list-item { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      padding: 12px 4px; 
-      border-bottom: 1px solid #f1f5f9; 
-      font-size: 15px; 
-    }
+    .list-box { background: white; padding: 20px; border-radius: 20px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid rgba(226, 232, 240, 0.8); }
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
     .list-item:last-child { border-bottom: none; }
 
-    .btn-small { 
-      background: #f1f5f9 !important; 
-      color: #475569 !important; 
-      border: none; 
-      border-radius: 8px; 
-      padding: 6px 12px; 
-      font-size: 12px; 
-      font-weight: 600;
-      cursor: pointer; 
-      white-space: nowrap; 
-      transition: 0.2s;
-    }
+    .btn-small { background: #f1f5f9 !important; color: #475569 !important; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; }
     .btn-small:hover { background: #e2e8f0 !important; color: #0f172a !important; }
     
-    .trip-btn { 
-      display: block; 
-      width: 100%; 
-      margin: 10px 0; 
-      background: white; 
-      color: #1e293b; 
-      border: 1px solid #e2e8f0; 
-      font-size: 16px; 
-      font-weight: 700;
-      padding: 16px;
-      border-radius: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-      text-align: left;
-      transition: 0.2s ease;
-    }
+    .trip-btn { display: block; width: 100%; margin: 10px 0; background: white; color: #1e293b; border: 1px solid #e2e8f0; font-size: 16px; font-weight: 700; padding: 16px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: left; transition: 0.2s ease; }
     .trip-btn:hover { border-color: #6c5ce7; background: #fbfbfe; transform: translateY(-2px); }
 
-    #new-trip-name, #new-trip-date, #theme { 
-      width: 100%; padding: 14px; margin-top: 8px; font-size: 14px; 
-      border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; outline: none; 
-      transition: 0.2s;
-    }
-    #new-trip-name:focus, #new-trip-date:focus, #theme:focus { 
-      border-color: #6c5ce7; background: white; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15); 
-    }
+    #new-trip-name, #new-trip-date, #theme { width: 100%; padding: 14px; margin-top: 8px; font-size: 14px; border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; outline: none; transition: 0.2s; }
+    #new-trip-name:focus, #new-trip-date:focus, #theme:focus { border-color: #6c5ce7; background: white; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15); }
 
-    .modal-overlay { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 100; overflow-y: auto;
-    }
-    .modal-content { 
-      position: relative; margin: 60px auto; background: white; padding: 24px 20px; 
-      border-radius: 24px; width: 90%; max-width: 380px; text-align: center; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: modalUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes modalUp {
-      from { transform: translateY(20px) scale(0.96); opacity: 0; }
-      to { transform: translateY(0) scale(1); opacity: 1; }
-    }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 100; overflow-y: auto; }
+    .modal-content { position: relative; margin: 40px auto; background: white; padding: 24px 20px; border-radius: 24px; width: 92%; max-width: 420px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: modalUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); transition: all 0.4s ease; }
+    @keyframes modalUp { from { transform: translateY(20px) scale(0.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-    .profiles { display: flex; justify-content: space-between; margin: 20px 0; gap: 8px; }
-    .profile { display: flex; flex-direction: column; align-items: center; flex: 1; }
-    .profile img { 
-      width: 48px; height: 48px; border-radius: 50%; object-fit: cover; 
-      border: 2px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-    }
-    .profile span { font-weight: 700; margin-top: 6px; font-size: 13px; color: #334155; }
-    .profile input { 
-      width: 100%; text-align: center; font-size: 13px; padding: 8px 4px; 
-      margin-top: 6px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; outline: none;
-    }
-    .profile input:focus { border-color: #6c5ce7; background: white; }
+    /* 🎬 욕심쟁이 등장 시 딥다크 시네마 모드 */
+    .modal-content.dark-cinema { background: #09090b !important; color: #f8fafc !important; border: 2px solid #ff007f !important; box-shadow: 0 0 50px rgba(255, 0, 127, 0.5) !important; }
+    .modal-content.dark-cinema h3 { color: #00ffcc !important; }
+    .modal-content.dark-cinema input { background: #18181b !important; color: #00ffcc !important; border-color: #3f3f46 !important; }
+
+    /* 프로필 및 다중 항목 입력 영역 */
+    .profiles-container { display: flex; flex-direction: column; gap: 12px; max-height: 260px; overflow-y: auto; padding-right: 4px; margin: 16px 0; text-align: left; }
+    .profile-group { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
+    .modal-content.dark-cinema .profile-group { background: #18181b; border-color: #27272a; }
     
-    #roulette-container { position: relative; width: 240px; height: 240px; margin: 24px auto; }
-    canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.12); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
-    .pointer { 
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%); 
-      width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; 
-      border-top: 22px solid #ff4757; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    }
+    .profile-info { display: flex; flex-direction: column; align-items: center; width: 52px; flex-shrink: 0; }
+    .profile-info img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+    .profile-info span { font-weight: 700; margin-top: 4px; font-size: 12px; color: #334155; }
+    .modal-content.dark-cinema .profile-info span { color: #f8fafc; }
+
+    .input-list { flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+    .input-row { display: flex; gap: 6px; align-items: center; }
+    .input-row input { flex-grow: 1; padding: 8px 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; outline: none; }
+    .modal-content.dark-cinema .input-row input { background: #27272a; color: #00ffcc; border-color: #3f3f46; }
     
+    .btn-item-add { background: #e2e8f0; border: none; border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: #475569; margin-top: 4px; align-self: flex-start; }
+    .btn-item-del { background: #ff7675; border: none; border-radius: 6px; color: white; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    #roulette-container { position: relative; width: 220px; height: 220px; margin: 16px auto; }
+    canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,12); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
+    .pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ff4757; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+    
+    /* 이벤트 안내 배너 */
+    #buff-banner { display: none; font-size: 14px; font-weight: 900; margin: 8px 0; padding: 8px; border-radius: 10px; animation: bounceText 0.5s infinite alternate; }
+    @keyframes bounceText { from { transform: scale(1); } to { transform: scale(1.04); } }
+
     #winner-display { display: none; margin-top: 20px; }
-    #winner-display img { 
-      width: 160px; height: auto; max-height: 200px; border-radius: 18px; 
-      border: 4px solid #ff4757; object-fit: contain; animation: bounce 1s infinite; 
-      background: white; padding: 6px; box-shadow: 0 10px 25px rgba(255, 71, 87, 0.2); 
-    }
+    #winner-display img { width: 140px; height: auto; max-height: 180px; border-radius: 18px; border: 4px solid #ff4757; object-fit: contain; animation: bounce 1s infinite; background: white; padding: 6px; box-shadow: 0 10px 25px rgba(255, 71, 87, 0.2); }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    #winner-text { font-size: 22px; font-weight: 800; color: #ff4757; margin-top: 14px; }
+    #winner-text { font-size: 20px; font-weight: 800; color: #ff4757; margin-top: 12px; }
     
     .modal-btns { display: flex; justify-content: space-between; margin-top: 12px; gap: 8px; }
     .modal-btns .btn { flex: 1; margin: 0; font-size: 14px; padding: 12px; }
     
-    #loading { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); z-index: 999; 
-      line-height: 100vh; font-size: 18px; font-weight: 700; color: #334155; 
-    }
+    #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); z-index: 999; line-height: 100vh; font-size: 18px; font-weight: 700; color: #334155; }
 
     .log-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 10px; text-align: left; }
     .log-date { font-size: 11px; color: #94a3b8; font-weight: 500; margin-bottom: 4px; }
@@ -246,13 +123,11 @@
 <body>
   <div id="loading">데이터를 불러오는 중입니다... 🚀</div>
 
-  <!-- 1. 첫 화면 -->
   <div id="screen-main" class="screen active">
     <img src="https://i.ibb.co/b5KhfR8w/image.png" class="main-img" onclick="showScreen('screen-category')">
     <h2>👽도파민 중독자👽</h2>
   </div>
 
-  <!-- 2. 카테고리 선택 -->
   <div id="screen-category" class="screen">
     <h2>어디로 갈까요?</h2>
     <button class="btn" style="background: #74b9ff !important; color: white !important;" onclick="showScreen('screen-travel-list')">🪂 여행</button>
@@ -261,7 +136,6 @@
     <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-main')">뒤로가기</button>
   </div>
 
-  <!-- 3. 여행 목록 -->
   <div id="screen-travel-list" class="screen">
     <h2>🛤️ 여행 목록</h2>
     <div id="trip-list-container" style="max-width: 400px; margin: 0 auto;"></div>
@@ -273,7 +147,6 @@
     <br><button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-category')">목록으로</button>
   </div>
 
-  <!-- 4. 여행 상세 -->
   <div id="screen-trip-detail" class="screen">
     <h2 id="trip-detail-title">🛸 여행 이름</h2>
     <div id="travel-results" class="list-box"></div>
@@ -281,7 +154,6 @@
     <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-travel-list')">목록으로</button>
   </div>
 
-  <!-- 5. 일상 상세 -->
   <div id="screen-daily" class="screen">
     <h2>☕ 일상 복불복</h2>
     <div id="daily-results" class="list-box"></div>
@@ -289,26 +161,24 @@
     <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-category')">뒤로가기</button>
   </div>
 
-  <!-- 6. 룰렛 모달 -->
   <div id="modal-roulette" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modal-title">🎲 룰렛 돌리기</h3>
       <input type="text" id="theme" placeholder="주제를 입력하세요 (예: 점심 메뉴)">
-      <div class="profiles">
-        <div class="profile"><img id="img-opt1" src="https://i.ibb.co/8LPZjGPS/image.png"><span>밍밍</span><input type="text" id="opt1" placeholder="입력"></div>
-        <div class="profile"><img id="img-opt2" src="https://i.ibb.co/pvwHBGWf/image.png"><span>세세</span><input type="text" id="opt2" placeholder="입력"></div>
-        <div class="profile"><img id="img-opt3" src="https://i.ibb.co/XZ2X0Lyq/image.png"><span>퍙퍙</span><input type="text" id="opt3" placeholder="입력"></div>
-        <div class="profile"><img id="img-opt4" src="https://i.ibb.co/nVW3JVQ/image.png"><span>가가</span><input type="text" id="opt4" placeholder="입력"></div>
-      </div>
-      div id="roulette-container">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="250" height="250"></canvas>
+      
+      <!-- 이벤트 안내 배너 -->
+      <div id="buff-banner"></div>
+
+      <!-- 다중 항목 입력 컨테이너 -->
+      <div class="profiles-container" id="profiles-container">
+        <!-- 동적으로 인물별 항목 입력 박스가 생성됩니다 -->
       </div>
 
-      <!-- 🎰 [변신 포인트] 평소엔 숨어있다가 룰렛이 끝날 때 팡 하고 튀어나오는 슬롯머신 박스! -->
-      <div id="slot-container" style="display:none; width: 240px; height: 100px; margin: 24px auto; background: #1e293b; border-radius: 20px; border: 4px solid #a29bfe; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        <div id="slot-text" style="font-size: 24px; font-weight: 900; color: #55efc4; font-family: 'Orbit', monospace; letter-spacing: 2px;">🎰 DRUM SPIN...</div>
+      <div id="roulette-container">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="220" height="220"></canvas>
       </div>
+
       <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
       <div class="modal-btns">
         <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%;" onclick="closeRoulette()">❌ 닫기</button>
@@ -317,21 +187,16 @@
     </div>
   </div>
 
-  <!-- 7. 의견 보기 모달 -->
   <div id="modal-detail" class="modal-overlay">
     <div class="modal-content">
       <h3>👀 모두의 의견</h3>
-      <div class="list-box" style="box-shadow:none; padding:10px; margin-top:15px; border:1px solid #ddd;">
-        <div class="list-item"><strong>밍밍 :</strong> <span id="detail-opt1"></span></div>
-        <div class="list-item"><strong>세세 :</strong> <span id="detail-opt2"></span></div>
-        <div class="list-item"><strong>퍙퍙 :</strong> <span id="detail-opt3"></span></div>
-        <div class="list-item"><strong>가가 :</strong> <span id="detail-opt4"></span></div>
+      <div id="detail-items-list" class="list-box" style="box-shadow:none; padding:10px; margin-top:15px; border:1px solid #ddd; max-height:250px; overflow-y:auto;">
+        <!-- 상세 보기 동적 리스트 -->
       </div>
       <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%; margin-top: 20px;" onclick="closeDetail()">닫기</button>
     </div>
   </div>
 
-  <!-- 8. 로그 모달 -->
   <div id="modal-logs" class="modal-overlay">
     <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
       <h3 style="color: #6c5ce7; margin-top: 0;">📜 전체 룰렛 기록</h3>
@@ -340,7 +205,6 @@
     </div>
   </div>
 
-  <!-- 9. 경고 팝업 -->
   <div id="modal-alert" class="modal-overlay">
     <div class="modal-content" style="max-width: 320px; padding: 25px;">
       <h3 style="margin-top: 0; color: #ff7675;">확인 🚨</h3>
@@ -354,6 +218,15 @@
     let currentCategory = '';
     let currentTripName = '';
 
+    const names = ['밍밍', '세세', '퍙퍙', '가가'];
+    const avatars = [
+      'https://i.ibb.co/8LPZjGPS/image.png',
+      'https://i.ibb.co/pvwHBGWf/image.png',
+      'https://i.ibb.co/XZ2X0Lyq/image.png',
+      'https://i.ibb.co/nVW3JVQ/image.png'
+    ];
+    const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
+
     window.addEventListener('firebase-initialized', () => {
       const loadingEl = document.getElementById('loading');
       loadingEl.style.display = 'block';
@@ -362,11 +235,7 @@
       window.fOnValue(dataRef, (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          appData = {
-            trips: val.trips || {},
-            daily: val.daily || [],
-            logs: val.logs || {}
-          };
+          appData = { trips: val.trips || {}, daily: val.daily || [], logs: val.logs || {} };
         } else {
           appData = { trips: {}, daily: [], logs: {} };
         }
@@ -421,16 +290,18 @@
       openTripDetail(name); 
     }
 
-    function openDetail(o1, o2, o3, o4, resultString) {
-      let winnerAnswer = "";
-      if (resultString) {
-          const parts = resultString.trim().split(' ');
-          winnerAnswer = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
-      }
-      document.getElementById('detail-opt1').innerHTML = o1 ? (o1 === winnerAnswer ? `${o1} 🎉` : o1) : '-';
-      document.getElementById('detail-opt2').innerHTML = o2 ? (o2 === winnerAnswer ? `${o2} 🎉` : o2) : '-';
-      document.getElementById('detail-opt3').innerHTML = o3 ? (o3 === winnerAnswer ? `${o3} 🎉` : o3) : '-';
-      document.getElementById('detail-opt4').innerHTML = o4 ? (o4 === winnerAnswer ? `${o4} 🎉` : o4) : '-';
+    // 상세 보기: 각 인물별 다중 항목들을 이쁘게 렌더링
+    function openDetail(itemObj) {
+      const container = document.getElementById('detail-items-list');
+      container.innerHTML = '';
+      
+      const allEntries = itemObj.allEntries || {};
+      names.forEach((name, i) => {
+        const userItems = allEntries[i] || [];
+        const itemsText = userItems.length > 0 ? userItems.join(', ') : '-';
+        container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${itemsText}</span></div>`;
+      });
+
       document.getElementById('modal-detail').style.display = 'block';
     }
     function closeDetail() { document.getElementById('modal-detail').style.display = 'none'; }
@@ -446,17 +317,13 @@
       } else {
         logKeys.forEach(k => {
           const log = logsObj[k];
-          const div = document.createElement('div');
-          div.className = 'log-card';
-          div.innerHTML = `
-            <div class="log-date">🕒 ${log.timestamp || ''} · [${log.category}${log.tripName ? ` - ${log.tripName}` : ''}]</div>
-            <div class="log-title">📌 ${log.theme}</div>
-            <div class="log-result">당첨: ${log.winnerName} (${log.result})</div>
-            <div class="log-details">
-              밍밍: ${log.opts?.[0] || '-'} | 세세: ${log.opts?.[1] || '-'} | 퍙퍙: ${log.opts?.[2] || '-'} | 가가: ${log.opts?.[3] || '-'}
+          container.innerHTML += `
+            <div class="log-card">
+              <div class="log-date">🕒 ${log.timestamp || ''} · [${log.category}${log.tripName ? ` - ${log.tripName}` : ''}]</div>
+              <div class="log-title">📌 ${log.theme}</div>
+              <div class="log-result">당첨: ${log.winnerName} (${log.result})</div>
             </div>
           `;
-          container.appendChild(div);
         });
       }
       document.getElementById('modal-logs').style.display = 'block';
@@ -482,13 +349,11 @@
         container.innerHTML += '<div class="list-item" style="color:#888; text-align:center; display:block;">항목추가 버튼을 눌러 복불복을 시작하세요!</div>';
       } else {
         items.forEach(item => {
-          const opts = item.opts || ['?', '?', '?', '?'];
-          const safeOpts = opts.map(o => (o||'').replace(/'/g, "\\'"));
-          const safeResult = (item.result || '').replace(/'/g, "\\'");
+          const safeItem = encodeURIComponent(JSON.stringify(item));
           container.innerHTML += `
             <div class="list-item">
               <div style="flex-grow:1; text-align:left;"><strong>[${item.theme}]</strong> ${item.result}</div>
-              <button class="btn-small" onclick="openDetail('${safeOpts[0]}', '${safeOpts[1]}', '${safeOpts[2]}', '${safeOpts[3]}', '${safeResult}')">🔍 보기</button>
+              <button class="btn-small" onclick='openDetail(JSON.parse(decodeURIComponent("${safeItem}")))'>🔍 보기</button>
             </div>
           `;
         });
@@ -507,13 +372,11 @@
         container.innerHTML += '<div class="list-item" style="color:#888; text-align:center; display:block;">항목추가 버튼을 눌러 복불복을 시작하세요!</div>';
       } else {
         dailyItems.forEach(item => {
-          const opts = item.opts || ['?', '?', '?', '?'];
-          const safeOpts = opts.map(o => (o||'').replace(/'/g, "\\'"));
-          const safeResult = (item.result || '').replace(/'/g, "\\'");
+          const safeItem = encodeURIComponent(JSON.stringify(item));
           container.innerHTML += `
             <div class="list-item">
               <div style="flex-grow:1; text-align:left;"><strong>[${item.theme}]</strong> ${item.result}</div>
-              <button class="btn-small" onclick="openDetail('${safeOpts[0]}', '${safeOpts[1]}', '${safeOpts[2]}', '${safeOpts[3]}', '${safeResult}')">🔍 보기</button>
+              <button class="btn-small" onclick='openDetail(JSON.parse(decodeURIComponent("${safeItem}")))'>🔍 보기</button>
             </div>
           `;
         });
@@ -521,156 +384,244 @@
       showScreen('screen-daily');
     }
 
+    // 룰렛 모달 열기 및 인물별 기본 입력창(각 1개씩) 세팅
     function openRoulette(category) {
       currentCategory = category;
       document.getElementById('modal-title').innerText = category === '여행' ? `🎲 ${currentTripName} 복불복` : `🎲 일상 복불복`;
       document.getElementById('modal-roulette').style.display = 'block';
       document.getElementById('roulette-container').style.display = 'block';
       document.getElementById('winner-display').style.display = 'none';
+      document.getElementById('buff-banner').style.display = 'none';
+      document.querySelector('.modal-content').classList.remove('dark-cinema');
 
-      clearRouletteInputs();
-    }
-
-    function clearRouletteInputs() {
       document.getElementById('theme').value = '';
-      document.getElementById('opt1').value = '';
-      document.getElementById('opt2').value = '';
-      document.getElementById('opt3').value = '';
-      document.getElementById('opt4').value = '';
+      renderProfileInputs();
       drawWheel();
     }
-    
+
+    // 인물별 다중 입력 HTML 동적 생성
+    function renderProfileInputs(customData = null) {
+      const container = document.getElementById('profiles-container');
+      container.innerHTML = '';
+
+      names.forEach((name, i) => {
+        const userInputs = (customData && customData[i]) ? customData[i] : [''];
+        
+        let inputsHtml = '';
+        userInputs.forEach((val, idx) => {
+          inputsHtml += `
+            <div class="input-row">
+              <input type="text" class="p-input-${i}" value="${val}" placeholder="항목 입력" oninput="drawWheel()">
+              ${idx > 0 ? `<button class="btn-item-del" onclick="removeInputRow(this)">×</button>` : ''}
+            </div>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="profile-group">
+            <div class="profile-info">
+              <img id="img-opt${i+1}" src="${avatars[i]}">
+              <span>${name}</span>
+            </div>
+            <div class="input-list" id="input-list-${i}">
+              ${inputsHtml}
+              <button class="btn-item-add" onclick="addInputRow(${i})">+ 항목추가</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addInputRow(personIdx) {
+      const listEl = document.getElementById(`input-list-${personIdx}`);
+      const addBtn = listEl.querySelector('.btn-item-add');
+      
+      const newRow = document.createElement('div');
+      newRow.className = 'input-row';
+      newRow.innerHTML = `
+        <input type="text" class="p-input-${personIdx}" value="" placeholder="항목 입력" oninput="drawWheel()">
+        <button class="btn-item-del" onclick="removeInputRow(this)">×</button>
+      `;
+      listEl.insertBefore(newRow, addBtn);
+      drawWheel();
+    }
+
+    function removeInputRow(btn) {
+      btn.parentElement.remove();
+      drawWheel();
+    }
+
     function closeRoulette() { document.getElementById('modal-roulette').style.display = 'none'; }
 
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
-    const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
-    const names = ['밍밍', '세세', '퍙퍙', '가가'];
     let currentRotation = 0;
     let isSpinning = false;
 
+    // 모든 입력된 항목들을 플랫(Flat)하게 모아서 룰렛 조각(세그먼트)으로 그림
+    function getAllFlatItems() {
+      let flatList = [];
+      names.forEach((name, i) => {
+        const inputEls = document.querySelectorAll(`.p-input-${i}`);
+        inputEls.forEach(el => {
+          const val = el.value.trim();
+          if (val !== '') {
+            flatList.push({ personIdx: i, personName: name, text: val });
+          }
+        });
+      });
+      return flatList;
+    }
+
     function drawWheel() {
-      const options = [
-        document.getElementById('opt1').value || '?', document.getElementById('opt2').value || '?',
-        document.getElementById('opt3').value || '?', document.getElementById('opt4').value || '?'
-      ];
-      const arc = Math.PI / 2;
-      ctx.clearRect(0, 0, 250, 250);
-      for(let i = 0; i < 4; i++) {
+      const items = getAllFlatItems();
+      ctx.clearRect(0, 0, 220, 220);
+
+      if (items.length === 0) {
+        // 비어있을 때 기본 가이드 링
         ctx.beginPath();
-        ctx.fillStyle = colors[i];
-        ctx.moveTo(125, 125);
-        ctx.arc(125, 125, 125, i * arc, (i + 1) * arc);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.arc(110, 110, 110, 0, Math.PI * 2);
         ctx.fill();
         ctx.save();
-        ctx.translate(125, 125);
-        ctx.rotate(i * arc + arc / 2);
-        ctx.textAlign = "right"; ctx.fillStyle = "#2d3436"; ctx.font = "bold 16px 'Orbit', monospace";
-        ctx.fillText(options[i], 110, 6);
+        ctx.translate(110, 110);
+        ctx.textAlign = "center"; ctx.fillStyle = "#64748b"; ctx.font = "bold 13px sans-serif";
+        ctx.fillText("항목을 입력해주세요!", 0, 5);
         ctx.restore();
+        return;
       }
+
+      const total = items.length;
+      const arc = (Math.PI * 2) / total;
+
+      items.forEach((item, i) => {
+        const startAngle = i * arc;
+        const endAngle = (i + 1) * arc;
+
+        ctx.beginPath();
+        ctx.fillStyle = colors[item.personIdx % colors.length];
+        ctx.moveTo(110, 110);
+        ctx.arc(110, 110, 110, startAngle, endAngle);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(110, 110);
+        ctx.rotate(startAngle + arc / 2);
+        ctx.textAlign = "right"; ctx.fillStyle = "#2d3436"; ctx.font = "bold 13px 'Orbit', monospace";
+        ctx.fillText(item.text, 95, 5);
+        ctx.restore();
+      });
     }
-    document.querySelectorAll('.profiles input').forEach(input => input.addEventListener('input', drawWheel));
-    drawWheel();
 
     function spin() {
       if (isSpinning) return;
       const theme = document.getElementById('theme').value;
-      const opts = [
-        document.getElementById('opt1').value, document.getElementById('opt2').value,
-        document.getElementById('opt3').value, document.getElementById('opt4').value
-      ];
-      
-      if(!theme || opts.includes('')) { showAlert("주제와 4명의 의견을 모두 채워주세요!"); return; }
+      const items = getAllFlatItems();
+
+      if (!theme) { showAlert("룰렛 주제를 입력해주세요!"); return; }
+      if (items.length < 2) { showAlert("최소 2개 이상의 항목을 입력해야 룰렛을 돌릴 수 있습니다!"); return; }
 
       isSpinning = true;
+      const banner = document.getElementById('buff-banner');
+      const modalContent = document.querySelector('.modal-content');
 
-      // 초기화: 룰렛 보이게, 슬롯머신 숨기기
-      document.getElementById('roulette-container').style.display = 'block';
-      document.getElementById('slot-container').style.display = 'none';
+      // 🎲 [이벤트 발동 확률 조작]
+      const eventChance = Math.random();
+      if (eventChance < 0.2) {
+        // 🖤 1. 욕심쟁이 등장: 배경 검은색 반전 (다크 시네마)
+        modalContent.classList.add('dark-cinema');
+        banner.style.display = 'block';
+        banner.style.background = '#09090b';
+        banner.style.color = '#ff007f';
+        banner.innerHTML = `😎 욕심쟁이 등장! 승부의 세계는 냉혹하다!`;
+      } else if (eventChance < 0.4) {
+        // ✨ 2. 천사 등장: 반짝이 효과 폭발!
+        modalContent.classList.remove('dark-cinema');
+        banner.style.display = 'block';
+        banner.style.background = '#74b9ff';
+        banner.style.color = '#ffffff';
+        banner.innerHTML = `👼 천사 등장! 행운의 여신이 미소짓습니다!`;
+        confetti({ particleCount: 80, spread: 100, origin: { y: 0.5 }, colors: ['#ffffff', '#ffeaa7', '#74b9ff'] });
+      } else {
+        modalContent.classList.remove('dark-cinema');
+        banner.style.display = 'none';
+      }
 
       const randomDegree = Math.floor(Math.random() * 360);
-      const totalRotation = currentRotation + 2500 + randomDegree;
+      const totalRotation = currentRotation + 3000 + randomDegree;
       currentRotation = totalRotation;
       canvas.style.transform = `rotate(${totalRotation}deg)`;
       
-      // ⏱️ [반전 타이밍] 룰렛이 끝나기 직전(2초 뒤), 갑자기 슬롯머신으로 변신!
       setTimeout(() => {
-        document.getElementById('roulette-container').style.display = 'none';
-        document.getElementById('slot-container').style.display = 'flex';
+        const totalItems = items.length;
+        const sliceDegree = 360 / totalItems;
+        const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
+        const winningIndex = Math.floor(pointerAngle / sliceDegree) % totalItems;
         
-        const slotEl = document.getElementById('slot-text');
-        let count = 0;
-        const slotInterval = setInterval(() => {
-          const randomName = names[Math.floor(Math.random() * names.length)];
-          slotEl.innerHTML = `🎰 ${randomName}?!`;
-          count++;
-        }, 80);
+        const winner = items[winningIndex];
+        const winnerName = winner.personName;
+        const winnerAnswer = winner.text;
 
-        // 슬롯머신이 드르륵 하다가 최종 당첨자 확정! (1초 뒤)
-        setTimeout(() => {
-          clearInterval(slotInterval);
+        let emoji = '🎯'; 
+        const t = theme.toLowerCase();
+        if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
+        else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
+        else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽'; }
+        else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
+        else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
+        else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
 
-          const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
-          const winnerIndex = Math.floor(pointerAngle / 90);
-          const winnerName = names[winnerIndex];
-          const winnerAnswer = opts[winnerIndex];
+        const resultString = `${winnerAnswer}`; 
+        
+        document.getElementById('roulette-container').style.display = 'none';
+        document.getElementById('winner-display').style.display = 'block';
+        document.getElementById('winner-img').src = avatars[winner.personIdx];
+        document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
+        
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        
+        const finalResult = `${emoji} ${resultString}`;
+        
+        // 각 인물별 입력된 모든 엔트리들을 맵핑하여 저장
+        let allEntriesObj = {};
+        names.forEach((_, i) => {
+          const els = document.querySelectorAll(`.p-input-${i}`);
+          allEntriesObj[i] = Array.from(els).map(el => el.value.trim()).filter(v => v !== '');
+        });
 
-          let emoji = '🎯'; 
-          const t = theme.toLowerCase();
-          if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
-          else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
-          else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️️'; }
-          else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
-          else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
-          else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
+        const newItem = { theme: theme, result: finalResult, allEntries: allEntriesObj };
 
-          const resultString = `${winnerAnswer}`; 
-          
-          document.getElementById('slot-container').style.display = 'none';
-          document.getElementById('winner-display').style.display = 'block';
-          document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src;
-          document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
-          
-          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-          
-          const finalResult = `${emoji} ${resultString}`;
-          const newItem = { theme: theme, result: finalResult, opts: opts };
+        const now = new Date();
+        const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-          const now = new Date();
-          const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const logData = {
+          timestamp: timestampStr,
+          category: currentCategory,
+          tripName: currentTripName || '',
+          theme: theme,
+          winnerName: winnerName,
+          result: finalResult
+        };
+        const logListRef = window.fRef(window.fDb, 'travelApp/logs');
+        const newLogRef = window.fPush(logListRef);
+        window.fSet(newLogRef, logData);
 
-          const logData = {
-            timestamp: timestampStr,
-            category: currentCategory,
-            tripName: currentTripName || '',
-            theme: theme,
-            winnerName: winnerName,
-            result: finalResult,
-            opts: opts
-          };
-          const logListRef = window.fRef(window.fDb, 'travelApp/logs');
-          const newLogRef = window.fPush(logListRef);
-          window.fSet(newLogRef, logData);
+        if (currentCategory === '여행') {
+          if (!appData.trips[currentTripName].items) appData.trips[currentTripName].items = [];
+          appData.trips[currentTripName].items.push(newItem);
+          const tripItemsRef = window.fRef(window.fDb, `travelApp/trips/${currentTripName}/items`);
+          window.fSet(tripItemsRef, appData.trips[currentTripName].items);
+          openTripDetail(currentTripName);
+        } else {
+          if (!appData.daily) appData.daily = [];
+          appData.daily.push(newItem);
+          const dailyRef = window.fRef(window.fDb, `travelApp/daily`);
+          window.fSet(dailyRef, appData.daily);
+          openDaily();
+        }
 
-          if (currentCategory === '여행') {
-            if (!appData.trips[currentTripName].items) appData.trips[currentTripName].items = [];
-            appData.trips[currentTripName].items.push(newItem);
-            const tripItemsRef = window.fRef(window.fDb, `travelApp/trips/${currentTripName}/items`);
-            window.fSet(tripItemsRef, appData.trips[currentTripName].items);
-            openTripDetail(currentTripName);
-          } else {
-            if (!appData.daily) appData.daily = [];
-            appData.daily.push(newItem);
-            const dailyRef = window.fRef(window.fDb, `travelApp/daily`);
-            window.fSet(dailyRef, appData.daily);
-            openDaily();
-          }
-
-          isSpinning = false;
-        }, 1000);
-
-      }, 2000);
+        isSpinning = false;
+      }, 3000);
     }
 
     function showAlert(msg) {
