@@ -72,12 +72,10 @@
     .modal-content { position: relative; margin: 40px auto; background: white; padding: 24px 20px; border-radius: 24px; width: 92%; max-width: 420px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: modalUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); transition: all 0.4s ease; }
     @keyframes modalUp { from { transform: translateY(20px) scale(0.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-    /* 🎬 다크 시네마 모드 (욕심쟁이 등장 시) */
     .modal-content.dark-cinema { background: #09090b !important; color: #f8fafc !important; border: 2px solid #ff007f !important; box-shadow: 0 0 50px rgba(255, 0, 127, 0.5) !important; }
     .modal-content.dark-cinema h3 { color: #00ffcc !important; }
     .modal-content.dark-cinema input { background: #18181b !important; color: #00ffcc !important; border-color: #3f3f46 !important; }
 
-    /* 프로필 및 다중 항목 입력 영역 */
     .profiles-container { display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto; padding-right: 4px; margin: 16px 0; text-align: left; }
     .profile-group { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
     .modal-content.dark-cinema .profile-group { background: #18181b; border-color: #27272a; }
@@ -99,7 +97,6 @@
     canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.12); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
     .pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ff4757; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
     
-    /* 이벤트 안내 배너 */
     #buff-banner { display: none; font-size: 13px; font-weight: 800; margin: 8px 0; padding: 8px 10px; border-radius: 10px; animation: bounceText 0.5s infinite alternate; }
     @keyframes bounceText { from { transform: scale(1); } to { transform: scale(1.03); } }
 
@@ -219,8 +216,6 @@
       'https://i.ibb.co/nVW3JVQ/image.png'
     ];
     const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
-
-    // 각 인물별 크기 가중치 (기본 1.0)
     let personWeights = [1, 1, 1, 1];
 
     window.addEventListener('firebase-initialized', () => {
@@ -286,16 +281,27 @@
       openTripDetail(name); 
     }
 
+    // 🔍 상세 보기: 신버전(allEntries)과 구버전(opts) 모두 완벽 호환하여 출력
     function openDetail(itemObj) {
       const container = document.getElementById('detail-items-list');
       container.innerHTML = '';
       
-      const allEntries = itemObj.allEntries || {};
-      names.forEach((name, i) => {
-        const userItems = allEntries[i] || [];
-        const itemsText = userItems.length > 0 ? userItems.join(', ') : '-';
-        container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${itemsText}</span></div>`;
-      });
+      if (itemObj.allEntries) {
+        const allEntries = itemObj.allEntries;
+        names.forEach((name, i) => {
+          const userItems = allEntries[i] || [];
+          const itemsText = userItems.length > 0 ? userItems.join(', ') : '-';
+          container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${itemsText}</span></div>`;
+        });
+      } else if (itemObj.opts) {
+        const opts = itemObj.opts;
+        names.forEach((name, i) => {
+          const val = opts[i] || '-';
+          container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${val}</span></div>`;
+        });
+      } else {
+        container.innerHTML = '<div style="color:#888; text-align:center; padding:10px;">저장된 의견이 없습니다.</div>';
+      }
 
       document.getElementById('modal-detail').style.display = 'block';
     }
@@ -388,16 +394,13 @@
       document.getElementById('buff-banner').style.display = 'none';
       document.querySelector('.modal-content').classList.remove('dark-cinema');
 
-      // 룰렛 버튼 부활 및 활성화
       const spinBtn = document.getElementById('btn-spin');
       if (spinBtn) {
         spinBtn.disabled = false;
         spinBtn.style.display = 'inline-flex';
       }
 
-      // 가중치 기본값 초기화
       personWeights = [1, 1, 1, 1];
-
       document.getElementById('theme').value = '';
       renderProfileInputs();
       drawWheel();
@@ -451,7 +454,6 @@
     let currentRotation = 0;
     let isSpinning = false;
 
-    // 모든 입력 항목 가져오기 (가중치 weight 포함)
     function getAllFlatItems() {
       let flatList = [];
       names.forEach((name, i) => {
@@ -466,7 +468,6 @@
       return flatList;
     }
 
-    // 🎨 가중치를 반영하여 비율이 실제로 달라지는 룰렛 그리기
     function drawWheel() {
       const items = getAllFlatItems();
       ctx.clearRect(0, 0, 220, 220);
@@ -518,23 +519,18 @@
 
       isSpinning = true;
 
-      // 🔒 연타 방지: 회전 시작 즉시 룰렛 버튼 비활성화
       const spinBtn = document.getElementById('btn-spin');
       if (spinBtn) spinBtn.disabled = true;
 
       const banner = document.getElementById('buff-banner');
       const modalContent = document.querySelector('.modal-content');
 
-      // 🎲 [이벤트 발동 및 원판 비율 실시간 조정]
-      personWeights = [1, 1, 1, 1]; // 기본 가중치 초기화
+      personWeights = [1, 1, 1, 1];
       const eventChance = Math.random();
-
-      // 실제 항목이 입력되어 있는 참가자 중에서 랜덤 선택
       const activePersons = Array.from(new Set(items.map(it => it.personIdx)));
       const chosenPersonIdx = activePersons[Math.floor(Math.random() * activePersons.length)];
 
       if (eventChance < 0.25) {
-        // 🖤 1. 욕심쟁이 등장: 선택된 사람의 칸이 3배로 커짐! (원판 대폭 확대) + 다크 반전
         personWeights[chosenPersonIdx] = 3.5;
         modalContent.classList.add('dark-cinema');
         banner.style.display = 'block';
@@ -542,7 +538,6 @@
         banner.style.color = '#ff007f';
         banner.innerHTML = `😎 [${names[chosenPersonIdx]}] 욕심쟁이 등장! 칸이 괴물처럼 커졌다!`;
       } else if (eventChance < 0.5) {
-        // ✨ 2. 천사 등장: 선택된 사람의 칸이 0.3배로 쪼그라듦! + 반짝이 폭죽
         personWeights[chosenPersonIdx] = 0.25;
         modalContent.classList.remove('dark-cinema');
         banner.style.display = 'block';
@@ -555,9 +550,8 @@
         banner.style.display = 'none';
       }
 
-      // 💥 변경된 비율로 룰렛 원판 즉시 다시 그리기!
       drawWheel();
-      items = getAllFlatItems(); // 변경된 가중치 반영된 아이템 목록 갱신
+      items = getAllFlatItems();
 
       const randomDegree = Math.floor(Math.random() * 360);
       const totalRotation = currentRotation + 3000 + randomDegree;
@@ -565,7 +559,6 @@
       canvas.style.transform = `rotate(${totalRotation}deg)`;
       
       setTimeout(() => {
-        // 정확한 가중치 기반 당첨자 계산
         const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
         const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
         const targetWeight = (pointerAngle / 360) * totalWeight;
@@ -599,7 +592,6 @@
         document.getElementById('winner-img').src = avatars[winner.personIdx];
         document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
         
-        // 🛑 결과 출력 후 룰렛 버튼 숨기기 (닫기 버튼만 남김)
         if (spinBtn) spinBtn.style.display = 'none';
 
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
