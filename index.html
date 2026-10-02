@@ -17,17 +17,17 @@
 
     // 🔥 [설정 1] 본인의 파이어베이스 프로젝트 설정 정보 입력
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+      apiKey: "AIzaSyAIU4LRdBLjv7kFKO8ip_oQUnz3Muijex4",
+      authDomain: "log-in-cave.firebaseapp.com",
+      databaseURL: "https://log-in-cave-default-rtdb.firebaseio.com/",
+      projectId: "log-in-cave",
+      storageBucket: "log-in-cave.firebasestorage.app",
+  messagingSenderId: "675427128097",
+  appId: "1:675427128097:web:9d85c10a96d6235783e460"
+};
 
     // 🔥 [설정 2] 본인의 구글 이메일 입력 (이 계정 외에는 로그인 시 자동 차단)
-    const ALLOWED_EMAIL = "your-email@gmail.com";
+    const ALLOWED_EMAIL = "seuna02@gmail.com";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -263,7 +263,7 @@
   <!-- 🔒 1인 전용 로그인 화면 -->
   <div id="login-section" class="book-container theme-dark" style="text-align:center; justify-content:center;">
     <h2 style="font-size: 24px; margin-bottom: 8px;">🗝️ log-in-days</h2>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 28px;">내 날들 속으로 온전히 접속하는 공간</p>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 28px;">내 마음 속으로 온전히 접속하는 공간</p>
     <button class="btn accent-btn" onclick="loginGoogle()">Google 계정으로 로그인</button>
   </div>
 
