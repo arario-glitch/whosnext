@@ -1,739 +1,389 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>👽도파민 중독자👽</title>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <title>log-in-days</title>
   
-  <!-- Firebase SDK 모듈 로드 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=DungGeunMo&display=swap">
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 🔥 파이어베이스 정식 설정 정보 적용 완료
     const firebaseConfig = {
-      apiKey: "AIzaSyBKCYxBf3SYgULC3WXtYxArWK3LamNiY",
-      authDomain: "dopamine-maker.firebaseapp.com",
-      databaseURL: "https://dopamine-maker-default-rtdb.firebaseio.com/",
-      projectId: "dopamine-maker",
-      storageBucket: "dopamine-maker.firebasestorage.app",
-      messagingSenderId: "462116626407",
-      appId: "1:462116626407:web:4739863a4c6c3a827e6742"
+      apiKey: "AIzaSyAIu4LRdBLjv7kFK08ip_oQunz3Muijex4",
+      authDomain: "log-in-cave.firebaseapp.com",
+      databaseURL: "https://log-in-cave-default-rtdb.firebaseio.com/",
+      projectId: "log-in-cave",
+      storageBucket: "log-in-cave.firebasestorage.app",
+      messagingSenderId: "675427128097",
+      appId: "1:675427128097:web:9d85c10a96d6235783e460"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const ALLOWED_EMAIL = "seuna02@gmail.com";
 
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    window.fAuth = auth;
+    window.fProvider = provider;
     window.fDb = db;
     window.fRef = ref;
     window.fSet = set;
-    window.fGet = get;
-    window.fOnValue = onValue;
     window.fPush = push;
+    window.fOnValue = onValue;
+    window.fRemove = remove;
+    window.fSignIn = signInWithPopup;
+    window.fSignOut = signOut;
+    window.ALLOWED_EMAIL = ALLOWED_EMAIL;
 
-    window.dispatchEvent(new Event('firebase-initialized'));
+    window.dispatchEvent(new Event('firebase-ready'));
   </script>
 
   <style>
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    @import url('https://fonts.googleapis.com/css2?family=Orbit&display=swap');
-
-    * { 
-      box-sizing: border-box; 
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     
-    body { 
-      text-align: center; 
-      background: #f1f4f9; 
-      margin: 0; 
-      padding: 24px 16px; 
-      color: #2d3436;
+    body {
+      min-height: 100vh;
       display: flex;
       justify-content: center;
-      min-height: 100vh;
-    }
-
-    h2 { 
-      font-size: 22px; 
-      font-weight: 700; 
-      color: #1e293b; 
-      margin-bottom: 24px; 
-      letter-spacing: -0.5px;
-    }
-    
-    .screen { 
-      display: none; 
-      width: 100%; 
-      max-width: 420px; 
-      margin: 0 auto; 
-    }
-    .screen.active { 
-      display: block; 
-      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-    }
-    @keyframes fadeIn { 
-      from { opacity: 0; transform: translateY(8px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-
-    .main-img { 
-      width: 240px; 
-      height: 240px; 
-      border-radius: 28px; 
-      object-fit: cover; 
-      cursor: pointer; 
-      box-shadow: 0 16px 32px rgba(108, 92, 231, 0.15); 
-      transition: all 0.3s ease;
-      border: 4px solid #ffffff;
-    }
-    .main-img:hover { 
-      transform: translateY(-4px) scale(1.02); 
-      box-shadow: 0 20px 40px rgba(108, 92, 231, 0.25);
-    }
-
-    .btn { 
-      padding: 14px 20px; 
-      font-size: 15px; 
-      font-weight: 600; 
-      margin: 6px; 
-      cursor: pointer; 
-      background: white;
-      color: #1e293b; 
-      border: none; 
-      border-radius: 16px; 
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04); 
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn:active { transform: scale(0.96); }
-    .btn:hover { filter: brightness(0.98); }
-
-    .btn-add { 
-      background: linear-gradient(135deg, #6c5ce7, #8e44ad) !important; 
-      color: white !important; 
-      margin-top: 16px; 
-      width: 100%; 
-      border-radius: 16px; 
-      padding: 15px;
-      font-size: 16px;
-      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3) !important;
-    }
-
-    .list-box { 
-      background: white; 
-      padding: 20px; 
-      border-radius: 20px; 
-      text-align: left; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.03); 
-      border: 1px solid rgba(226, 232, 240, 0.8);
-    }
-    
-    .list-item { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      padding: 12px 4px; 
-      border-bottom: 1px solid #f1f5f9; 
-      font-size: 15px; 
-    }
-    .list-item:last-child { border-bottom: none; }
-
-    .btn-small { 
-      background: #f1f5f9 !important; 
-      color: #475569 !important; 
-      border: none; 
-      border-radius: 8px; 
-      padding: 6px 12px; 
-      font-size: 12px; 
-      font-weight: 600;
-      cursor: pointer; 
-      white-space: nowrap; 
-      transition: 0.2s;
-    }
-    .btn-small:hover { background: #e2e8f0 !important; color: #0f172a !important; }
-    
-    .trip-btn { 
-      display: block; 
-      width: 100%; 
-      margin: 10px 0; 
-      background: white; 
-      color: #1e293b; 
-      border: 1px solid #e2e8f0; 
-      font-size: 16px; 
-      font-weight: 700;
+      background: #121418;
       padding: 16px;
-      border-radius: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-      text-align: left;
-      transition: 0.2s ease;
-    }
-    .trip-btn:hover { border-color: #6c5ce7; background: #fbfbfe; transform: translateY(-2px); }
-
-    #new-trip-name, #new-trip-date, #theme { 
-      width: 100%; padding: 14px; margin-top: 8px; font-size: 14px; 
-      border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; outline: none; 
-      transition: 0.2s;
-    }
-    #new-trip-name:focus, #new-trip-date:focus, #theme:focus { 
-      border-color: #6c5ce7; background: white; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15); 
+      font-family: 'Pretendard', sans-serif;
     }
 
-    .modal-overlay { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 100; overflow-y: auto;
-    }
-    .modal-content { 
-      position: relative; margin: 60px auto; background: white; padding: 24px 20px; 
-      border-radius: 24px; width: 90%; max-width: 380px; text-align: center; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: modalUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes modalUp {
-      from { transform: translateY(20px) scale(0.96); opacity: 0; }
-      to { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    .profiles { display: flex; justify-content: space-between; margin: 20px 0; gap: 8px; }
-    .profile { display: flex; flex-direction: column; align-items: center; flex: 1; }
-    .profile img { 
-      width: 48px; height: 48px; border-radius: 50%; object-fit: cover; 
-      border: 2px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-    }
-    .profile span { font-weight: 700; margin-top: 6px; font-size: 13px; color: #334155; }
-    .profile input { 
-      width: 100%; text-align: center; font-size: 13px; padding: 8px 4px; 
-      margin-top: 6px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; outline: none;
-    }
-    .profile input:focus { border-color: #6c5ce7; background: white; }
-    
-    #roulette-container { position: relative; width: 240px; height: 240px; margin: 24px auto; }
-    canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.12); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
-    .pointer { 
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%); 
-      width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; 
-      border-top: 22px solid #ff4757; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-    }
-    
-    #winner-display { display: none; margin-top: 20px; }
-    #winner-display img { 
-      width: 160px; height: auto; max-height: 200px; border-radius: 18px; 
-      border: 4px solid #ff4757; object-fit: contain; animation: bounce 1s infinite; 
-      background: white; padding: 6px; box-shadow: 0 10px 25px rgba(255, 71, 87, 0.2); 
-    }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    #winner-text { font-size: 22px; font-weight: 800; color: #ff4757; margin-top: 14px; }
-    
-    .modal-btns { display: flex; justify-content: space-between; margin-top: 12px; gap: 8px; }
-    .modal-btns .btn { flex: 1; margin: 0; font-size: 14px; padding: 12px; }
-    
-    #loading { 
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-      background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); z-index: 999; 
-      line-height: 100vh; font-size: 18px; font-weight: 700; color: #334155; 
+    .book-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 85vh;
+      border-radius: 28px;
+      padding: 28px 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+      position: relative;
+      overflow: hidden;
+      transform-origin: left center;
+      animation: bookOpen 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     }
 
-    .log-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 10px; text-align: left; }
-    .log-date { font-size: 11px; color: #94a3b8; font-weight: 500; margin-bottom: 4px; }
-    .log-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-    .log-result { font-size: 14px; color: #6c5ce7; font-weight: 700; }
-    .log-details { font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 6px; }
+    @keyframes bookOpen {
+      0% { transform: scale(0.94) rotateY(-12deg); opacity: 0; }
+      100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+    }
+
+    /* 1. 👑 로판 영애 테마 */
+    .theme-royalty {
+      background: #fbf8f1 !important;
+      color: #3e2723 !important;
+      border: 3px double #d4af37 !important;
+      font-family: 'Nanum Myeongjo', serif !important;
+    }
+    .theme-royalty input, .theme-royalty textarea {
+      background: #f4ecdc !important; border: 1px solid #d4af37 !important; color: #3e2723 !important; font-family: 'Nanum Myeongjo', serif !important;
+    }
+    .theme-royalty .accent-btn { background: linear-gradient(135deg, #b8860b, #d4af37) !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(184, 134, 11, 0.25) !important; }
+    .theme-royalty .diary-card { background: rgba(212, 175, 55, 0.08) !important; border: 1px solid rgba(212, 175, 55, 0.3) !important; }
+
+    /* 2. 👾 진정한 레트로 픽셀 게임 테마 (CRT 감성 강화) */
+    .theme-retro {
+      background: #0f051d !important;
+      color: #00ffcc !important;
+      border: 4px solid #ff007f !important;
+      font-family: 'DungGeunMo', monospace !important;
+      box-shadow: 0 0 30px rgba(255, 0, 127, 0.4), inset 0 0 40px rgba(0, 255, 204, 0.15) !important;
+      letter-spacing: 1px;
+    }
+    .theme-retro input, .theme-retro textarea {
+      background: #190933 !important;
+      border: 2px dashed #ff007f !important;
+      color: #ffff00 !important;
+      font-family: 'DungGeunMo', monospace !important;
+      font-size: 16px !important;
+    }
+    .theme-retro .accent-btn {
+      background: #ff007f !important;
+      color: #ffffff !important;
+      border-radius: 4px !important;
+      font-weight: bold;
+      border: 2px solid #ffff00 !important;
+      box-shadow: 0 4px 0 #99004c !important;
+    }
+    .theme-retro .accent-btn:active {
+      box-shadow: 0 1px 0 #99004c !important;
+      transform: translateY(3px);
+    }
+    .theme-retro .diary-card {
+      background: #190933 !important;
+      border: 2px solid #00ffcc !important;
+      box-shadow: 3px 3px 0px #ff007f !important;
+    }
+
+    /* 3. 🖤 올블랙 딥다크 테마 */
+    .theme-dark {
+      background: #0d0f12 !important; color: #e2e8f0 !important; border: 1px solid #1e293b !important; font-family: 'Pretendard', sans-serif !important;
+    }
+    .theme-dark input, .theme-dark textarea { background: #161b22 !important; border: 1px solid #30363d !important; color: #f0f6fc !important; }
+    .theme-dark .accent-btn { background: #3b82f6 !important; color: #ffffff !important; }
+    .theme-dark .diary-card { background: rgba(255, 255, 255, 0.04) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important; }
+
+    /* 4. 🤍 순백 페이퍼 테마 */
+    .theme-white {
+      background: #ffffff !important; color: #1e293b !important; border: 1px solid #e2e8f0 !important; font-family: 'Pretendard', sans-serif !important;
+    }
+    .theme-white input, .theme-white textarea { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+    .theme-white .accent-btn { background: #0f172a !important; color: #ffffff !important; }
+    .theme-white .diary-card { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .app-brand { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+    .theme-selector { display: flex; gap: 7px; align-items: center; }
+    .theme-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .theme-dot:hover { transform: scale(1.18); }
+    
+    .btn { padding: 12px 18px; border: none; border-radius: 14px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s ease; }
+    .btn:active { transform: scale(0.96); }
+
+    .input-box { width: 100%; padding: 14px; border-radius: 14px; margin-bottom: 12px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    textarea.input-box { height: 180px; resize: none; line-height: 1.7; }
+
+    .cd-player-box {
+      display: flex; align-items: center; gap: 16px; background: rgba(0, 0, 0, 0.05); border-radius: 18px; padding: 14px; margin-bottom: 18px; border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .theme-royalty .cd-player-box { background: rgba(212, 175, 55, 0.1); border-color: rgba(212, 175, 55, 0.3); }
+    .theme-retro .cd-player-box { background: #190933; border: 2px solid #00ffcc; box-shadow: 2px 2px 0px #ff007f; }
+    .theme-dark .cd-player-box { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); }
+
+    .cd-disc {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: conic-gradient(from 0deg, #ff758c, #ff7eb3, #7facff, #85ffbd, #ff758c);
+      position: relative; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2); animation: cdRotate 6s linear infinite; flex-shrink: 0;
+    }
+    .theme-retro .cd-disc { background: conic-gradient(from 0deg, #ff007f, #ffff00, #00ffcc, #ff007f); }
+    .cd-disc::after { content: ''; width: 20px; height: 20px; background: #121418; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); }
+    @keyframes cdRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .cd-info { flex-grow: 1; overflow: hidden; }
+    .cd-title { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+
+    .diary-card { border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; text-align: left; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .diary-card:hover { transform: translateY(-2px); }
   </style>
 </head>
 <body>
-  <div id="loading">데이터를 불러오는 중입니다... 🚀</div>
 
-  <!-- 1. 첫 화면 -->
-  <div id="screen-main" class="screen active">
-    <img src="https://i.ibb.co/b5KhfR8w/image.png" class="main-img" onclick="showScreen('screen-category')">
-    <h2>👽도파민 중독자👽</h2>
+  <div id="login-section" class="book-container theme-dark" style="text-align:center; justify-content:center;">
+    <h2 style="font-size: 24px; margin-bottom: 8px;">🗝️ log-in-days</h2>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 28px;">내 마음 속으로 온전히 접속하는 공간</p>
+    <button class="btn accent-btn" onclick="loginGoogle()">Google 계정으로 로그인</button>
   </div>
 
-  <!-- 2. 카테고리 선택 -->
-  <div id="screen-category" class="screen">
-    <h2>어디로 갈까요?</h2>
-    <button class="btn" style="background: #74b9ff !important; color: white !important;" onclick="showScreen('screen-travel-list')">🪂 여행</button>
-    <button class="btn" style="background: #fab1a0 !important; color: white !important;" onclick="openDaily()">🎶 일상</button><br><br>
-    <button class="btn" style="background: #a29bfe !important; color: white !important; width: calc(100% - 40px); max-width: 320px;" onclick="openLogModal()">📜 전체 룰렛 기록 (로그)</button><br><br>
-    <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-main')">뒤로가기</button>
-  </div>
-
-  <!-- 3. 여행 목록 -->
-  <div id="screen-travel-list" class="screen">
-    <h2>🛤️ 여행 목록</h2>
-    <div id="trip-list-container" style="max-width: 400px; margin: 0 auto;"></div>
-    <div class="list-box" style="margin-top:20px; text-align:center;">
-      <input type="text" id="new-trip-name" placeholder="새 여행 이름 (예: 10월 제천여행)">
-      <input type="text" id="new-trip-date" placeholder="여행 일정 (예: 10.03 ~ 10.05)">
-      <button class="btn btn-add" onclick="addNewTrip()">+ 새 여행 만들기</button>
-    </div>
-    <br><button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-category')">목록으로</button>
-  </div>
-
-  <!-- 4. 여행 상세 -->
-  <div id="screen-trip-detail" class="screen">
-    <h2 id="trip-detail-title">🛸 여행 이름</h2>
-    <div id="travel-results" class="list-box"></div>
-    <button class="btn btn-add" onclick="openRoulette('여행')">+ 복불복 항목 추가</button><br><br>
-    <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-travel-list')">목록으로</button>
-  </div>
-
-  <!-- 5. 일상 상세 -->
-  <div id="screen-daily" class="screen">
-    <h2>☕ 일상 복불복</h2>
-    <div id="daily-results" class="list-box"></div>
-    <button class="btn btn-add" onclick="openRoulette('일상')">+ 복불복 항목 추가</button><br><br>
-    <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-category')">뒤로가기</button>
-  </div>
-
-  <!-- 6. 룰렛 모달 -->
-  <div id="modal-roulette" class="modal-overlay">
-    <div class="modal-content">
-      <h3 id="modal-title">🎲 룰렛 돌리기</h3>
-      <input type="text" id="theme" placeholder="주제를 입력하세요 (예: 점심 메뉴)">
-      <div class="profiles">
-        <div class="profile"><img src="https://i.ibb.co/8LPZjGPS/image.png"><span>밍밍</span><input type="text" id="opt1" placeholder="입력"></div>
-        <div class="profile"><img src="https://i.ibb.co/pvwHBGWf/image.png"><span>세세</span><input type="text" id="opt2" placeholder="입력"></div>
-        <div class="profile"><img src="https://i.ibb.co/XZ2X0Lyq/image.png"><span>퍙퍙</span><input type="text" id="opt3" placeholder="입력"></div>
-        <div class="profile"><img src="https://i.ibb.co/nVW3JVQ/image.png"><span>가가</span><input type="text" id="opt4" placeholder="입력"></div>
+  <div id="diary-app" class="book-container theme-royalty" style="display:none;">
+    
+    <div class="top-bar">
+      <div class="app-brand">log-in-days</div>
+      <div class="theme-selector">
+        <div class="theme-dot" style="background:#fbf8f1; border-color:#d4af37;" title="로판 영애" onclick="setTheme('theme-royalty')"></div>
+        <div class="theme-dot" style="background:#0f051d; border-color:#ff007f;" title="레트로 게임" onclick="setTheme('theme-retro')"></div>
+        <div class="theme-dot" style="background:#0d0f12; border-color:#30363d;" title="올블랙" onclick="setTheme('theme-dark')"></div>
+        <div class="theme-dot" style="background:#ffffff; border-color:#cbd5e1;" title="순백 페이퍼" onclick="setTheme('theme-white')"></div>
       </div>
-      <div id="roulette-container">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="250" height="250"></canvas>
-      </div>
-      <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
-      <div class="modal-btns">
-        <button class="btn" style="background: #ffeaa7 !important; color: #d63031 !important;" onclick="saveToTemp()">💾 임시저장</button>
-        <button class="btn" style="background: #74b9ff !important; color: white !important;" onclick="loadFromTemp()">🔄 불러오기</button>
-      </div>
-      <div class="modal-btns">
-        <button class="btn" style="background: #ff7675 !important; color: white !important;" onclick="closeRoulette()">❌ 닫기</button>
-        <button class="btn" style="background: #a29bfe !important; color: white !important; flex: 2;" onclick="spin()">🎲 룰렛 GO!</button>
+      <div>
+        <button class="btn" style="padding:6px 10px; font-size:11px; opacity:0.75; background:none; color:inherit; border:1px solid currentColor;" onclick="logout()">잠그기</button>
       </div>
     </div>
-  </div>
 
-  <!-- 7. 의견 보기 모달 -->
-  <div id="modal-detail" class="modal-overlay">
-    <div class="modal-content">
-      <h3>👀 모두의 의견</h3>
-      <div class="list-box" style="box-shadow:none; padding:10px; margin-top:15px; border:1px solid #ddd;">
-        <div class="list-item"><strong>밍밍 :</strong> <span id="detail-opt1"></span></div>
-        <div class="list-item"><strong>세세 :</strong> <span id="detail-opt2"></span></div>
-        <div class="list-item"><strong>퍙퍙 :</strong> <span id="detail-opt3"></span></div>
-        <div class="list-item"><strong>가가 :</strong> <span id="detail-opt4"></span></div>
-      </div>
-      <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%; margin-top: 20px;" onclick="closeDetail()">닫기</button>
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <button class="btn accent-btn" style="flex:1;" onclick="switchTab('write')">✍️️ 새 일기 쓰기</button>
+      <button class="btn accent-btn" style="flex:1;" onclick="switchTab('list')">📚 지난 기록들</button>
     </div>
-  </div>
 
-  <!-- 8. 로그 모달 -->
-  <div id="modal-logs" class="modal-overlay">
-    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-      <h3 style="color: #6c5ce7; margin-top: 0;">📜 전체 룰렛 기록</h3>
-      <div id="logs-container"><div style="color:#888; padding:20px;">기록을 불러오는 중...</div></div>
-      <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%; margin-top: 15px;" onclick="closeLogModal()">닫기</button>
+    <div id="view-write">
+      <input type="text" id="title" class="input-box" placeholder="오늘의 소제목">
+      <input type="text" id="yt-url" class="input-box" placeholder="🎵 오늘의 노래 (유튜브 링크 복사 후 붙여넣기)">
+      <textarea id="content" class="input-box" placeholder="오늘 하루의 공기와 감정, 생각들을 편안하게 남겨보세요..."></textarea>
+      <button class="btn accent-btn" style="width:100%; padding:15px; font-size:15px;" onclick="saveDiary()">기록 봉인하기 🖋️</button>
     </div>
-  </div>
 
-  <!-- 9. 경고 팝업 -->
-  <div id="modal-alert" class="modal-overlay">
-    <div class="modal-content" style="max-width: 320px; padding: 25px;">
-      <h3 style="margin-top: 0; color: #ff7675;">확인 🚨</h3>
-      <p id="alert-msg" style="font-size: 16px; margin: 20px 0; color: #333;"></p>
-      <button class="btn" style="background: #55efc4 !important; color: #2d3436 !important; width: 100%; margin-top: 10px;" onclick="closeCustomAlert()">확인</button>
+    <div id="view-list" style="display:none; width:100%; margin-top:16px;">
+      <div id="diary-items"></div>
     </div>
-  </div>
 
-  <!-- 10. 임시저장 확인 -->
-  <div id="modal-confirm" class="modal-overlay">
-    <div class="modal-content" style="max-width: 320px; padding: 25px;">
-      <h3 style="margin-top: 0; color: #0984e3;">임시저장 발견! 📝</h3>
-      <p id="confirm-msg" style="font-size: 16px; margin: 20px 0; color: #333;"></p>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn" style="flex: 1; background: #ff7675 !important; color: white !important; margin: 0;" onclick="handleConfirm(false)">취소</button>
-        <button class="btn" style="flex: 1; background: #55efc4 !important; color: #2d3436 !important; margin: 0;" onclick="handleConfirm(true)">불러오기</button>
-      </div>
+    <div id="detail-modal" style="display:none; margin-top:10px;">
+      <button class="btn" style="margin-bottom:12px; font-size:12px; padding:6px 12px; background:rgba(0,0,0,0.06); color:inherit;" onclick="closeDetail()">⬅️ 목록으로</button>
+      <h3 id="det-title" style="margin-bottom:6px; font-size:18px;"></h3>
+      <div id="det-date" style="font-size:12px; opacity:0.6; margin-bottom:14px;"></div>
+      
+      <div id="det-cd-player"></div>
+
+      <div id="det-content" style="white-space: pre-wrap; line-height: 1.8; font-size:14px; margin-bottom:24px;"></div>
+      <button class="btn" style="background:#ff5252; color:white; font-size:12px; padding:8px 14px;" onclick="deleteCurrentDiary()">기록 삭제</button>
     </div>
+
   </div>
 
   <script>
-    let appData = { trips: {}, daily: {}, logs: {} };
-    let currentCategory = '';
-    let currentTripName = '';
+    let currentUser = null;
+    let diaries = {};
+    let currentDetailId = null;
+    let currentSelectedTheme = 'theme-royalty';
 
-    window.addEventListener('firebase-initialized', () => {
-      const loadingEl = document.getElementById('loading');
-      loadingEl.style.display = 'block';
-      const dataRef = window.fRef(window.fDb, 'travelApp');
+    function extractYoutubeId(url) {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
 
-      window.fOnValue(dataRef, (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          appData = {
-            trips: val.trips || {},
-            daily: val.daily || [],
-            logs: val.logs || {}
-          };
+    function setTheme(themeName) {
+      currentSelectedTheme = themeName;
+      document.getElementById('diary-app').className = `book-container ${themeName}`;
+    }
+
+    function switchTab(tab) {
+      document.getElementById('view-write').style.display = tab === 'write' ? 'block' : 'none';
+      document.getElementById('view-list').style.display = tab === 'list' ? 'block' : 'none';
+      document.getElementById('detail-modal').style.display = 'none';
+    }
+
+    window.addEventListener('firebase-ready', () => {
+      window.fAuth.onAuthStateChanged((user) => {
+        if (user && user.email === window.ALLOWED_EMAIL) {
+          currentUser = user;
+          document.getElementById('login-section').style.display = 'none';
+          document.getElementById('diary-app').style.display = 'flex';
+          loadDiaries();
+        } else if (user) {
+          alert("접근 권한이 없는 계정입니다.");
+          window.fSignOut(window.fAuth);
         } else {
-          appData = { trips: {}, daily: [], logs: {} };
+          document.getElementById('login-section').style.display = 'flex';
+          document.getElementById('diary-app').style.display = 'none';
         }
-        renderTripList();
-        if (currentCategory === '여행' && currentTripName && appData.trips[currentTripName]) {
-          openTripDetail(currentTripName);
-        } else if (currentCategory === '일상') {
-          openDaily();
-        }
-        loadingEl.style.display = 'none';
-      }, (error) => {
-        loadingEl.style.display = 'none';
-        showAlert("실시간 동기화 오류: " + error.message);
       });
     });
 
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+    function loginGoogle() {
+      window.fSignIn(window.fAuth, window.fProvider).catch(err => alert("로그인 오류: " + err.message));
     }
 
-    function renderTripList() {
-      const container = document.getElementById('trip-list-container');
+    function logout() {
+      window.fSignOut(window.fAuth);
+    }
+
+    function saveDiary() {
+      const title = document.getElementById('title').value.trim();
+      const ytUrl = document.getElementById('yt-url').value.trim();
+      const content = document.getElementById('content').value.trim();
+
+      if (!title || !content) {
+        alert("제목과 본문을 입력해 주세요!");
+        return;
+      }
+
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+      const diaryData = {
+        title,
+        ytId: extractYoutubeId(ytUrl),
+        content,
+        theme: currentSelectedTheme,
+        date: dateStr,
+        timestamp: Date.now()
+      };
+
+      const userDiaryRef = window.fRef(window.fDb, `users/${currentUser.uid}/diaries`);
+      const newRef = window.fPush(userDiaryRef);
+      window.fSet(newRef, diaryData).then(() => {
+        alert("오늘의 감정과 노래가 안전하게 봉인되었습니다. ✨");
+        document.getElementById('title').value = '';
+        document.getElementById('yt-url').value = '';
+        document.getElementById('content').value = '';
+        switchTab('list');
+      });
+    }
+
+    function loadDiaries() {
+      const userDiaryRef = window.fRef(window.fDb, `users/${currentUser.uid}/diaries`);
+      window.fOnValue(userDiaryRef, (snapshot) => {
+        diaries = snapshot.val() || {};
+        renderDiaryList();
+      });
+    }
+
+    function renderDiaryList() {
+      const container = document.getElementById('diary-items');
       container.innerHTML = '';
-      const tripNames = Object.keys(appData.trips || {});
-      if(tripNames.length === 0) {
-        container.innerHTML = '<div class="list-box" style="color:#888; text-align:center;">아직 추가된 여행이 없습니다.</div>';
-      } else {
-        tripNames.forEach(name => {
-          const btn = document.createElement('button');
-          btn.className = 'btn trip-btn';
-          btn.innerText = `🛤 ${name}`;
-          btn.onclick = () => openTripDetail(name);
-          container.appendChild(btn);
-        });
+      const keys = Object.keys(diaries).reverse();
+
+      if (keys.length === 0) {
+        container.innerHTML = '<div style="opacity:0.5; padding:30px 10px; text-align:center; font-size:13px;">아직 기록된 날들이 없습니다. 첫 일기를 남겨보세요.</div>';
+        return;
       }
+
+      keys.forEach(k => {
+        const item = diaries[k];
+        const card = document.createElement('div');
+        card.className = 'diary-card';
+        card.innerHTML = `
+          <div style="font-size:11px; opacity:0.6; margin-bottom:2px;">🕒 ${item.date}</div>
+          <div style="font-size:15px; font-weight:bold; margin-bottom:4px;">${item.title}</div>
+          <div style="font-size:12px; opacity:0.75;">${item.ytId ? '💿 CD 플레이어 수록됨' : '📝 텍스트 기록'}</div>
+        `;
+        card.onclick = () => openDetail(k);
+        container.appendChild(card);
+      });
     }
 
-    function addNewTrip() {
-      const name = document.getElementById('new-trip-name').value.trim();
-      const date = document.getElementById('new-trip-date').value.trim();
-      if(!name || !date) { showAlert("여행 이름과 일정을 모두 입력해주세요!"); return; }
-      
-      if(!appData.trips) appData.trips = {};
-      if(!appData.trips[name]) {
-         appData.trips[name] = { date: date, items: [] };
-         const tripRef = window.fRef(window.fDb, `travelApp/trips/${name}`);
-         window.fSet(tripRef, { date: date, items: [] });
-      }
-      document.getElementById('new-trip-name').value = '';
-      document.getElementById('new-trip-date').value = '';
-      openTripDetail(name); 
-    }
+    function openDetail(id) {
+      currentDetailId = id;
+      const d = diaries[id];
+      if (d.theme) setTheme(d.theme);
 
-    function openDetail(o1, o2, o3, o4, resultString) {
-      let winnerAnswer = "";
-      if (resultString) {
-          const parts = resultString.trim().split(' ');
-          winnerAnswer = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
-      }
-      document.getElementById('detail-opt1').innerHTML = o1 ? (o1 === winnerAnswer ? `${o1} 🎉` : o1) : '-';
-      document.getElementById('detail-opt2').innerHTML = o2 ? (o2 === winnerAnswer ? `${o2} 🎉` : o2) : '-';
-      document.getElementById('detail-opt3').innerHTML = o3 ? (o3 === winnerAnswer ? `${o3} 🎉` : o3) : '-';
-      document.getElementById('detail-opt4').innerHTML = o4 ? (o4 === winnerAnswer ? `${o4} 🎉` : o4) : '-';
-      document.getElementById('modal-detail').style.display = 'block';
-    }
-    function closeDetail() { document.getElementById('modal-detail').style.display = 'none'; }
+      document.getElementById('det-title').innerText = d.title;
+      document.getElementById('det-date').innerText = d.date;
+      document.getElementById('det-content').innerText = d.content;
 
-    function openLogModal() {
-      const container = document.getElementById('logs-container');
-      container.innerHTML = '';
-      const logsObj = appData.logs || {};
-      const logKeys = Object.keys(logsObj).reverse();
-
-      if (logKeys.length === 0) {
-        container.innerHTML = '<div style="color:#888; padding:20px;">아직 저장된 룰렛 기록이 없습니다.</div>';
-      } else {
-        logKeys.forEach(k => {
-          const log = logsObj[k];
-          const div = document.createElement('div');
-          div.className = 'log-card';
-          div.innerHTML = `
-            <div class="log-date">🕒 ${log.timestamp || ''} · [${log.category}${log.tripName ? ` - ${log.tripName}` : ''}]</div>
-            <div class="log-title">📌 ${log.theme}</div>
-            <div class="log-result">당첨: ${log.winnerName} (${log.result})</div>
-            <div class="log-details">
-              밍밍: ${log.opts?.[0] || '-'} | 세세: ${log.opts?.[1] || '-'} | 퍙퍙: ${log.opts?.[2] || '-'} | 가가: ${log.opts?.[3] || '-'}
+      const cdBox = document.getElementById('det-cd-player');
+      if (d.ytId) {
+        cdBox.innerHTML = `
+          <div class="cd-player-box">
+            <div class="cd-disc"></div>
+            <div class="cd-info">
+              <div class="cd-title">🎵 오늘의 BGM 재생 중</div>
+              <iframe width="100%" height="36" src="https://www.youtube.com/embed/${d.ytId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" style="border-radius:6px;"></iframe>
             </div>
-          `;
-          container.appendChild(div);
-        });
-      }
-      document.getElementById('modal-logs').style.display = 'block';
-    }
-    function closeLogModal() { document.getElementById('modal-logs').style.display = 'none'; }
-
-    function openTripDetail(tripName) {
-      currentCategory = '여행';
-      currentTripName = tripName;
-      document.getElementById('trip-detail-title').innerText = `🚀 ${tripName}`;
-      const container = document.getElementById('travel-results');
-      container.innerHTML = '';
-      
-      const trip = appData.trips ? appData.trips[tripName] : null;
-      if (!trip) return;
-
-      if(trip.date) {
-        container.innerHTML += `<div class="list-item" style="background:#f1fdf5; border: 2px solid #55efc4; border-radius: 8px; margin-bottom:15px; justify-content:center;"><strong>📅 날짜 : </strong> ${trip.date}</div>`;
-      }
-      
-      const items = trip.items || [];
-      if(items.length === 0) {
-        container.innerHTML += '<div class="list-item" style="color:#888; text-align:center; display:block;">항목추가 버튼을 눌러 복불복을 시작하세요!</div>';
+          </div>
+        `;
       } else {
-        items.forEach(item => {
-          const opts = item.opts || ['?', '?', '?', '?'];
-          const safeOpts = opts.map(o => (o||'').replace(/'/g, "\\'"));
-          const safeResult = (item.result || '').replace(/'/g, "\\'");
-          container.innerHTML += `
-            <div class="list-item">
-              <div style="flex-grow:1; text-align:left;"><strong>[${item.theme}]</strong> ${item.result}</div>
-              <button class="btn-small" onclick="openDetail('${safeOpts[0]}', '${safeOpts[1]}', '${safeOpts[2]}', '${safeOpts[3]}', '${safeResult}')">🔍 보기</button>
-            </div>
-          `;
+        cdBox.innerHTML = '';
+      }
+
+      document.getElementById('view-list').style.display = 'none';
+      document.getElementById('view-write').style.display = 'none';
+      document.getElementById('detail-modal').style.display = 'block';
+    }
+
+    function closeDetail() {
+      switchTab('list');
+    }
+
+    function deleteCurrentDiary() {
+      if (confirm("이 날의 기록을 정말 영구 삭제하시겠습니까?")) {
+        const targetRef = window.fRef(window.fDb, `users/${currentUser.uid}/diaries/${currentDetailId}`);
+        window.fRemove(targetRef).then(() => {
+          closeDetail();
         });
       }
-      showScreen('screen-trip-detail');
-    }
-
-    function openDaily() {
-      currentCategory = '일상';
-      currentTripName = '';
-      const container = document.getElementById('daily-results');
-      container.innerHTML = '';
-      
-      const dailyItems = appData.daily || [];
-      if(dailyItems.length === 0) {
-        container.innerHTML += '<div class="list-item" style="color:#888; text-align:center; display:block;">항목추가 버튼을 눌러 복불복을 시작하세요!</div>';
-      } else {
-        dailyItems.forEach(item => {
-          const opts = item.opts || ['?', '?', '?', '?'];
-          const safeOpts = opts.map(o => (o||'').replace(/'/g, "\\'"));
-          const safeResult = (item.result || '').replace(/'/g, "\\'");
-          container.innerHTML += `
-            <div class="list-item">
-              <div style="flex-grow:1; text-align:left;"><strong>[${item.theme}]</strong> ${item.result}</div>
-              <button class="btn-small" onclick="openDetail('${safeOpts[0]}', '${safeOpts[1]}', '${safeOpts[2]}', '${safeOpts[3]}', '${safeResult}')">🔍 보기</button>
-            </div>
-          `;
-        });
-      }
-      showScreen('screen-daily');
-    }
-
-    function openRoulette(category) {
-      currentCategory = category;
-      document.getElementById('modal-title').innerText = category === '여행' ? `🎲 ${currentTripName} 복불복` : `🎲 일상 복불복`;
-      document.getElementById('modal-roulette').style.display = 'block';
-      document.getElementById('roulette-container').style.display = 'block';
-      document.getElementById('winner-display').style.display = 'none';
-
-      const tempKey = category === '여행' ? `temp_${category}_${currentTripName}` : `temp_${category}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fGet(tempRef).then((snapshot) => {
-        const data = snapshot.val();
-        if (data && (data.theme || data.opt1 || data.opt2 || data.opt3 || data.opt4)) {
-          showConfirm("작성 중이던 임시저장 내용이 있습니다. 불러올까요?", () => {
-            document.getElementById('theme').value = data.theme || '';
-            document.getElementById('opt1').value = data.opt1 || '';
-            document.getElementById('opt2').value = data.opt2 || '';
-            document.getElementById('opt3').value = data.opt3 || '';
-            document.getElementById('opt4').value = data.opt4 || '';
-            drawWheel();
-          }, () => { clearRouletteInputs(); });
-        } else { clearRouletteInputs(); }
-      }).catch(() => { clearRouletteInputs(); });
-    }
-
-    function clearRouletteInputs() {
-      document.getElementById('theme').value = '';
-      document.getElementById('opt1').value = '';
-      document.getElementById('opt2').value = '';
-      document.getElementById('opt3').value = '';
-      document.getElementById('opt4').value = '';
-      drawWheel();
-    }
-    
-    function closeRoulette() { document.getElementById('modal-roulette').style.display = 'none'; }
-
-    const canvas = document.getElementById('wheel');
-    const ctx = canvas.getContext('2d');
-    const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
-    const names = ['밍밍', '세세', '퍙퍙', '가가'];
-    let currentRotation = 0;
-    let isSpinning = false;
-
-    function drawWheel() {
-      const options = [
-        document.getElementById('opt1').value || '?', document.getElementById('opt2').value || '?',
-        document.getElementById('opt3').value || '?', document.getElementById('opt4').value || '?'
-      ];
-      const arc = Math.PI / 2;
-      ctx.clearRect(0, 0, 250, 250);
-      for(let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.fillStyle = colors[i];
-        ctx.moveTo(125, 125);
-        ctx.arc(125, 125, 125, i * arc, (i + 1) * arc);
-        ctx.fill();
-        ctx.save();
-        ctx.translate(125, 125);
-        ctx.rotate(i * arc + arc / 2);
-        ctx.textAlign = "right"; ctx.fillStyle = "#2d3436"; ctx.font = "bold 16px 'Orbit', monospace";
-        ctx.fillText(options[i], 110, 6);
-        ctx.restore();
-      }
-    }
-    document.querySelectorAll('.profiles input').forEach(input => input.addEventListener('input', drawWheel));
-    drawWheel();
-
-    function saveToTemp() {
-      const t = document.getElementById('theme').value;
-      const o1 = document.getElementById('opt1').value;
-      const o2 = document.getElementById('opt2').value;
-      const o3 = document.getElementById('opt3').value;
-      const o4 = document.getElementById('opt4').value;
-      
-      if(!t && !o1 && !o2 && !o3 && !o4) { showAlert("저장할 내용이 없습니다!"); return; }
-
-      const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fSet(tempRef, { theme: t, opt1: o1, opt2: o2, opt3: o3, opt4: o4 })
-        .then(() => { showAlert("💾 임시저장 완료! 다음에 이어서 쓸 수 있습니다."); })
-        .catch(err => showAlert("임시저장 실패: " + err.message));
-    }
-
-    function loadFromTemp() {
-      const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fGet(tempRef).then((snapshot) => {
-        const data = snapshot.val();
-        if(data) {
-          document.getElementById('theme').value = data.theme || '';
-          document.getElementById('opt1').value = data.opt1 || '';
-          document.getElementById('opt2').value = data.opt2 || '';
-          document.getElementById('opt3').value = data.opt3 || '';
-          document.getElementById('opt4').value = data.opt4 || '';
-          drawWheel();
-          showAlert("🔄 임시저장된 내용을 불러왔습니다!");
-        } else { showAlert("저장된 임시 내용이 없습니다."); }
-      }).catch(err => showAlert("불러오기 실패: " + err.message));
-    }
-
-    function spin() {
-      if (isSpinning) return;
-      const theme = document.getElementById('theme').value;
-      const opts = [
-        document.getElementById('opt1').value, document.getElementById('opt2').value,
-        document.getElementById('opt3').value, document.getElementById('opt4').value
-      ];
-      
-      if(!theme || opts.includes('')) { showAlert("주제와 4명의 의견을 모두 채워주세요!"); return; }
-
-      isSpinning = true;
-      const randomDegree = Math.floor(Math.random() * 360);
-      const totalRotation = currentRotation + 3600 + randomDegree;
-      currentRotation = totalRotation;
-      canvas.style.transform = `rotate(${totalRotation}deg)`;
-      
-      setTimeout(() => {
-        const pointerAngle = (360 - (totalRotation % 360) + 270) % 360; 
-        const winnerIndex = Math.floor(pointerAngle / 90);
-        const winnerName = names[winnerIndex];
-        const winnerAnswer = opts[winnerIndex];
-
-        let emoji = '🎯'; 
-        const t = theme.toLowerCase();
-        if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
-        else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
-        else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️'; }
-        else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
-        else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
-        else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
-
-        const resultString = `${winnerAnswer}`; 
-        document.getElementById('roulette-container').style.display = 'none';
-        document.getElementById('winner-display').style.display = 'block';
-        document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src; // 이미지 태그 선택자 수정 반영
-        document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
-        
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        
-        const finalResult = `${emoji} ${resultString}`;
-        const newItem = { theme: theme, result: finalResult, opts: opts };
-
-        const now = new Date();
-        const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-        const logData = {
-          timestamp: timestampStr,
-          category: currentCategory,
-          tripName: currentTripName || '',
-          theme: theme,
-          winnerName: winnerName,
-          result: finalResult,
-          opts: opts
-        };
-        const logListRef = window.fRef(window.fDb, 'travelApp/logs');
-        const newLogRef = window.fPush(logListRef);
-        window.fSet(newLogRef, logData);
-
-        if (currentCategory === '여행') {
-          if (!appData.trips[currentTripName].items) appData.trips[currentTripName].items = [];
-          appData.trips[currentTripName].items.push(newItem);
-          const tripItemsRef = window.fRef(window.fDb, `travelApp/trips/${currentTripName}/items`);
-          window.fSet(tripItemsRef, appData.trips[currentTripName].items);
-          openTripDetail(currentTripName);
-        } else {
-          if (!appData.daily) appData.daily = [];
-          appData.daily.push(newItem);
-          const dailyRef = window.fRef(window.fDb, `travelApp/daily`);
-          window.fSet(dailyRef, appData.daily);
-          openDaily();
-        }
-
-        const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-        const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-        window.fSet(tempRef, null);
-
-        isSpinning = false;
-      }, 3000);
-    }
-
-    function showAlert(msg) {
-      document.getElementById('alert-msg').innerText = msg;
-      document.getElementById('modal-alert').style.display = 'block';
-    }
-    function closeCustomAlert() { document.getElementById('modal-alert').style.display = 'none'; }
-
-    let confirmCallback = null;
-    let cancelCallback = null;
-    function showConfirm(msg, onYes, onNo) {
-      document.getElementById('confirm-msg').innerText = msg;
-      document.getElementById('modal-confirm').style.display = 'block';
-      confirmCallback = onYes;
-      cancelCallback = onNo;
-    }
-    function handleConfirm(isYes) {
-      document.getElementById('modal-confirm').style.display = 'none';
-      if (isYes && confirmCallback) confirmCallback();
-      if (!isYes && cancelCallback) cancelCallback();
-      confirmCallback = null; cancelCallback = null;
     }
   </script>
 </body>
