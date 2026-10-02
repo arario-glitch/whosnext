@@ -286,18 +286,31 @@
       const container = document.getElementById('detail-items-list');
       container.innerHTML = '';
       
+      // 당첨 결과 텍스트에서 이모지와 공백을 제외한 실제 당첨 항목 추출 (예: "🏠 몽벨리" -> "몽벨리")
+      let winnerAnswer = "";
+      if (itemObj.result) {
+        const parts = itemObj.result.trim().split(' ');
+        winnerAnswer = parts.length > 1 ? parts.slice(1).join(' ') : parts[0];
+      }
+
       if (itemObj.allEntries) {
         const allEntries = itemObj.allEntries;
         names.forEach((name, i) => {
           const userItems = allEntries[i] || [];
-          const itemsText = userItems.length > 0 ? userItems.join(', ') : '-';
-          container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${itemsText}</span></div>`;
+          if (userItems.length > 0) {
+            // 당첨된 항목 옆에 폭죽(🎉) 이모지 팡파레 추가!
+            const formattedItems = userItems.map(val => val === winnerAnswer ? `${val} 🎉` : val).join(', ');
+            container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${formattedItems}</span></div>`;
+          } else {
+            container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>-</span></div>`;
+          }
         });
       } else if (itemObj.opts) {
         const opts = itemObj.opts;
         names.forEach((name, i) => {
           const val = opts[i] || '-';
-          container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${val}</span></div>`;
+          const formattedVal = val === winnerAnswer ? `${val} 🎉` : val;
+          container.innerHTML += `<div class="list-item"><strong>${name} :</strong> <span>${formattedVal}</span></div>`;
         });
       } else {
         container.innerHTML = '<div style="color:#888; text-align:center; padding:10px;">저장된 의견이 없습니다.</div>';
