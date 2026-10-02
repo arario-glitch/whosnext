@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎮도파민 중독 가보자🎮</title>
+  <title>👽도파민 중독자👽</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <!-- Firebase SDK 모듈 로드 -->
@@ -11,7 +11,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 🔥 파이어베이스 정식 설정 정보 적용 완료
     const firebaseConfig = {
       apiKey: "AIzaSyBKCYxBf3SYgULC3WXtYxArWK3LamNiY",
       authDomain: "dopamine-maker.firebaseapp.com",
@@ -307,12 +306,8 @@
       </div>
       <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
       <div class="modal-btns">
-        <button class="btn" style="background: #ffeaa7 !important; color: #d63031 !important;" onclick="saveToTemp()">💾 임시저장</button>
-        <button class="btn" style="background: #74b9ff !important; color: white !important;" onclick="loadFromTemp()">🔄 불러오기</button>
-      </div>
-      <div class="modal-btns">
-        <button class="btn" style="background: #ff7675 !important; color: white !important;" onclick="closeRoulette()">❌ 닫기</button>
-        <button class="btn" style="background: #a29bfe !important; color: white !important; flex: 2;" onclick="spin()">🎲 룰렛 GO!</button>
+        <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%;" onclick="closeRoulette()">❌ 닫기</button>
+        <button class="btn" style="background: #a29bfe !important; color: white !important; flex: 2; width: 100%;" onclick="spin()">🎲 룰렛 GO!</button>
       </div>
     </div>
   </div>
@@ -346,18 +341,6 @@
       <h3 style="margin-top: 0; color: #ff7675;">확인 🚨</h3>
       <p id="alert-msg" style="font-size: 16px; margin: 20px 0; color: #333;"></p>
       <button class="btn" style="background: #55efc4 !important; color: #2d3436 !important; width: 100%; margin-top: 10px;" onclick="closeCustomAlert()">확인</button>
-    </div>
-  </div>
-
-  <!-- 10. 임시저장 확인 -->
-  <div id="modal-confirm" class="modal-overlay">
-    <div class="modal-content" style="max-width: 320px; padding: 25px;">
-      <h3 style="margin-top: 0; color: #0984e3;">임시저장 발견! 📝</h3>
-      <p id="confirm-msg" style="font-size: 16px; margin: 20px 0; color: #333;"></p>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn" style="flex: 1; background: #ff7675 !important; color: white !important; margin: 0;" onclick="handleConfirm(false)">취소</button>
-        <button class="btn" style="flex: 1; background: #55efc4 !important; color: #2d3436 !important; margin: 0;" onclick="handleConfirm(true)">불러오기</button>
-      </div>
     </div>
   </div>
 
@@ -540,22 +523,7 @@
       document.getElementById('roulette-container').style.display = 'block';
       document.getElementById('winner-display').style.display = 'none';
 
-      const tempKey = category === '여행' ? `temp_${category}_${currentTripName}` : `temp_${category}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fGet(tempRef).then((snapshot) => {
-        const data = snapshot.val();
-        if (data && (data.theme || data.opt1 || data.opt2 || data.opt3 || data.opt4)) {
-          showConfirm("작성 중이던 임시저장 내용이 있습니다. 불러올까요?", () => {
-            document.getElementById('theme').value = data.theme || '';
-            document.getElementById('opt1').value = data.opt1 || '';
-            document.getElementById('opt2').value = data.opt2 || '';
-            document.getElementById('opt3').value = data.opt3 || '';
-            document.getElementById('opt4').value = data.opt4 || '';
-            drawWheel();
-          }, () => { clearRouletteInputs(); });
-        } else { clearRouletteInputs(); }
-      }).catch(() => { clearRouletteInputs(); });
+      clearRouletteInputs();
     }
 
     function clearRouletteInputs() {
@@ -600,41 +568,6 @@
     document.querySelectorAll('.profiles input').forEach(input => input.addEventListener('input', drawWheel));
     drawWheel();
 
-    function saveToTemp() {
-      const t = document.getElementById('theme').value;
-      const o1 = document.getElementById('opt1').value;
-      const o2 = document.getElementById('opt2').value;
-      const o3 = document.getElementById('opt3').value;
-      const o4 = document.getElementById('opt4').value;
-      
-      if(!t && !o1 && !o2 && !o3 && !o4) { showAlert("저장할 내용이 없습니다!"); return; }
-
-      const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fSet(tempRef, { theme: t, opt1: o1, opt2: o2, opt3: o3, opt4: o4 })
-        .then(() => { showAlert("💾 임시저장 완료! 다음에 이어서 쓸 수 있습니다."); })
-        .catch(err => showAlert("임시저장 실패: " + err.message));
-    }
-
-    function loadFromTemp() {
-      const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-      const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-
-      window.fGet(tempRef).then((snapshot) => {
-        const data = snapshot.val();
-        if(data) {
-          document.getElementById('theme').value = data.theme || '';
-          document.getElementById('opt1').value = data.opt1 || '';
-          document.getElementById('opt2').value = data.opt2 || '';
-          document.getElementById('opt3').value = data.opt3 || '';
-          document.getElementById('opt4').value = data.opt4 || '';
-          drawWheel();
-          showAlert("🔄 임시저장된 내용을 불러왔습니다!");
-        } else { showAlert("저장된 임시 내용이 없습니다."); }
-      }).catch(err => showAlert("불러오기 실패: " + err.message));
-    }
-
     function spin() {
       if (isSpinning) return;
       const theme = document.getElementById('theme').value;
@@ -669,7 +602,7 @@
         const resultString = `${winnerAnswer}`; 
         document.getElementById('roulette-container').style.display = 'none';
         document.getElementById('winner-display').style.display = 'block';
-        document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src; // 이미지 태그 선택자 수정 반영
+        document.getElementById('winner-img').src = document.getElementById(`img-opt${winnerIndex + 1}`).src;
         document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
         
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -707,10 +640,6 @@
           openDaily();
         }
 
-        const tempKey = currentCategory === '여행' ? `temp_${currentCategory}_${currentTripName}` : `temp_${currentCategory}`;
-        const tempRef = window.fRef(window.fDb, `travelApp/temp/${tempKey}`);
-        window.fSet(tempRef, null);
-
         isSpinning = false;
       }, 3000);
     }
@@ -720,21 +649,6 @@
       document.getElementById('modal-alert').style.display = 'block';
     }
     function closeCustomAlert() { document.getElementById('modal-alert').style.display = 'none'; }
-
-    let confirmCallback = null;
-    let cancelCallback = null;
-    function showConfirm(msg, onYes, onNo) {
-      document.getElementById('confirm-msg').innerText = msg;
-      document.getElementById('modal-confirm').style.display = 'block';
-      confirmCallback = onYes;
-      cancelCallback = onNo;
-    }
-    function handleConfirm(isYes) {
-      document.getElementById('modal-confirm').style.display = 'none';
-      if (isYes && confirmCallback) confirmCallback();
-      if (!isYes && cancelCallback) cancelCallback();
-      confirmCallback = null; cancelCallback = null;
-    }
   </script>
 </body>
 </html>
