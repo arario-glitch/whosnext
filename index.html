@@ -76,12 +76,10 @@
     .modal-content.dark-cinema h3 { color: #00ffcc !important; }
     .modal-content.dark-cinema input { background: #18181b !important; color: #00ffcc !important; border-color: #3f3f46 !important; }
 
-    /* 게임 모드 탭 버튼 스타일 */
     .mode-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
     .tab-btn { flex: 1; padding: 10px; font-size: 14px; font-weight: 700; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; border-radius: 12px; cursor: pointer; transition: 0.2s; }
     .tab-btn.active { background: #6c5ce7; color: white; border-color: #6c5ce7; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3); }
 
-    /* 룰렛용 & 사다리타기용 입력 영역 컨테이너 전환 */
     .section-area { display: none; text-align: left; margin: 16px 0; max-height: 250px; overflow-y: auto; }
     .section-area.active { display: block; }
 
@@ -102,7 +100,6 @@
     .btn-item-add { background: #e2e8f0; border: none; border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: #475569; margin-top: 4px; align-self: flex-start; }
     .btn-item-del { background: #ff7675; border: none; border-radius: 6px; color: white; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-    /* 사다리타기 전용 UI 스타일 */
     .ladder-setup-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
     .ladder-setup-box h4 { margin: 0 0 8px 0; font-size: 13px; color: #475569; }
     .ladder-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -123,6 +120,13 @@
 
     #buff-banner { display: none; font-size: 13px; font-weight: 800; margin: 8px 0; padding: 8px 10px; border-radius: 10px; animation: bounceText 0.5s infinite alternate; }
     @keyframes bounceText { from { transform: scale(1); } to { transform: scale(1.03); } }
+
+    /* 사다리 전체 결과 매칭 뷰 스타일 */
+    #ladder-result-display { display: none; margin-top: 10px; text-align: left; }
+    .ladder-result-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .ladder-result-person { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: #1e293b; }
+    .ladder-result-person img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; }
+    .ladder-result-val { font-size: 15px; font-weight: 800; color: #6c5ce7; background: #f3f0ff; padding: 6px 12px; border-radius: 10px; }
 
     #winner-display { display: none; margin-top: 20px; }
     #winner-display img { width: 140px; height: auto; max-height: 180px; border-radius: 18px; border: 4px solid #ff4757; object-fit: contain; animation: bounce 1s infinite; background: white; padding: 6px; box-shadow: 0 10px 25px rgba(255, 71, 87, 0.2); }
@@ -200,23 +204,21 @@
         <div class="profiles-container" id="profiles-container"></div>
       </div>
 
-      <!-- 2. 사다리타기 전용 입력 영역 (결과 4개 + 참가자 선택) -->
+      <!-- 2. 사다리타기 전용 입력 영역 -->
       <div id="area-ladder" class="section-area">
         <div class="ladder-setup-box">
           <h4>🎁 당첨 결과 4개 입력</h4>
           <div class="ladder-results-grid">
-            <input type="text" class="ladder-res" placeholder="결과 1 (예: 꽝)">
-            <input type="text" class="ladder-res" placeholder="결과 2 (예: 당첨)">
-            <input type="text" class="ladder-res" placeholder="결과 3 (예: 벌칙)">
-            <input type="text" class="ladder-res" placeholder="결과 4 (예: 면제)">
+            <input type="text" class="ladder-res" placeholder="결과 1">
+            <input type="text" class="ladder-res" placeholder="결과 2">
+            <input type="text" class="ladder-res" placeholder="결과 3">
+            <input type="text" class="ladder-res" placeholder="결과 4">
           </div>
         </div>
 
         <div class="ladder-setup-box">
           <h4>👥 사다리 탈 사람 선택 (복수 선택 가능)</h4>
-          <div class="participants-grid" id="participants-grid">
-            <!-- JS로 동적 생성 -->
-          </div>
+          <div class="participants-grid" id="participants-grid"></div>
         </div>
       </div>
 
@@ -231,8 +233,15 @@
         <div id="ladder-anim-text">🪜 LADDER RUN...</div>
       </div>
 
+      <!-- 룰렛 당첨 단일 표시 -->
       <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
-      
+
+      <!-- 사다리타기 전체 결과 매칭 뷰 -->
+      <div id="ladder-result-display">
+        <h4 style="margin: 0 0 10px 0; color: #6c5ce7; font-size:16px;">🎉 사다리타기 전체 결과!</h4>
+        <div id="ladder-result-cards"></div>
+      </div>
+
       <div class="modal-btns">
         <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%;" onclick="closeRoulette()">❌ 닫기</button>
         <button id="btn-spin" class="btn" style="background: #a29bfe !important; color: white !important; flex: 2; width: 100%;" onclick="startAction()">🚀 START!</button>
@@ -268,7 +277,7 @@
     let appData = { trips: {}, daily: {}, logs: {} };
     let currentCategory = '';
     let currentTripName = '';
-    let currentMode = 'roulette'; // 'roulette' 또는 'ladder'
+    let currentMode = 'roulette';
 
     const names = ['밍밍', '세세', '퍙퍙', '가가'];
     const avatars = [
@@ -279,7 +288,7 @@
     ];
     const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
     let personWeights = [1, 1, 1, 1];
-    let selectedParticipants = [true, true, true, true]; // 기본 전원 선택
+    let selectedParticipants = [true, true, true, true];
 
     window.addEventListener('firebase-initialized', () => {
       const loadingEl = document.getElementById('loading');
@@ -349,11 +358,25 @@
       container.innerHTML = '';
       const resultStr = itemObj.result || "";
 
-      if (itemObj.ladderResults) {
-        // 사다리타기 상세 기록 출력
+      if (itemObj.ladderMappings) {
+        container.innerHTML += `<div class="list-item" style="background:#f8fafc; font-weight:bold; justify-content:center;">🪜 사다리타기 전체 결과</div>`;
+        const mappings = itemObj.ladderMappings;
+        for (const [pName, resVal] of Object.entries(mappings)) {
+          const pIdx = names.indexOf(pName);
+          const avatarUrl = pIdx !== -1 ? avatars[pIdx] : avatars[0];
+          container.innerHTML += `
+            <div class="list-item">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <img src="${avatarUrl}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+                <strong>${pName}</strong>
+              </div>
+              <span style="color:#6c5ce7; font-weight:700;">${resVal}</span>
+            </div>
+          `;
+        }
+      } else if (itemObj.ladderResults) {
         container.innerHTML += `<div class="list-item" style="background:#f8fafc; font-weight:bold; justify-content:center;">🪜 사다리타기 결과</div>`;
-        const results = itemObj.ladderResults;
-        results.forEach((res, idx) => {
+        itemObj.ladderResults.forEach((res, idx) => {
           container.innerHTML += `<div class="list-item"><strong>결과 ${idx+1} :</strong> <span>${res}</span></div>`;
         });
       } else if (itemObj.allEntries) {
@@ -465,6 +488,7 @@
       document.getElementById('modal-title').innerText = category === '여행' ? `🎲 ${currentTripName} 복불복` : `🎲 일상 복불복`;
       document.getElementById('modal-roulette').style.display = 'block';
       document.getElementById('winner-display').style.display = 'none';
+      document.getElementById('ladder-result-display').style.display = 'none';
       document.getElementById('buff-banner').style.display = 'none';
       document.querySelector('.modal-content').classList.remove('dark-cinema');
 
@@ -483,7 +507,6 @@
       renderLadderParticipants();
     }
 
-    // 모드 전환 (룰렛 <-> 사다리타기)
     function switchMode(mode) {
       currentMode = mode;
       const rTab = document.getElementById('tab-roulette');
@@ -527,7 +550,6 @@
       });
     }
 
-    // 사다리 탈 사람 선택 그리드 렌더링
     function renderLadderParticipants() {
       const grid = document.getElementById('participants-grid');
       grid.innerHTML = '';
@@ -628,7 +650,6 @@
         if (items.length < 2) { showAlert("최소 2개 이상의 항목을 입력해주세요!"); return; }
         spinRoulette(theme, items);
       } else {
-        // 사다리타기 유효성 검사
         const resInputs = document.querySelectorAll('.ladder-res');
         let ladderResults = [];
         resInputs.forEach(input => {
@@ -715,18 +736,24 @@
       setTimeout(() => {
         clearInterval(ladderInterval);
         
-        // 무작위로 참가자 한 명과 결과 한 개 매칭
-        const chosenPersonName = activeNames[Math.floor(Math.random() * activeNames.length)];
-        const chosenResult = ladderResults[Math.floor(Math.random() * ladderResults.length)];
-        const personIdx = names.indexOf(chosenPersonName);
+        // 🪜 선택된 참가자 전원에게 결과 셔플해서 1:1 매칭!
+        let shuffledResults = [...ladderResults];
+        // 결과 개수가 참가자보다 적을 경우 반복해서 채움
+        while (shuffledResults.length < activeNames.length) {
+          shuffledResults = shuffledResults.concat(ladderResults);
+        }
+        // 무작위 섞기 (Fisher-Yates shuffle)
+        for (let i = shuffledResults.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledResults[i], shuffledResults[j]] = [shuffledResults[j], shuffledResults[i]];
+        }
 
-        const winnerObj = {
-          personIdx: personIdx,
-          personName: chosenPersonName,
-          text: chosenResult
-        };
+        let ladderMappings = {};
+        activeNames.forEach((pName, idx) => {
+          ladderMappings[pName] = shuffledResults[idx];
+        });
 
-        finishLadderGame(theme, winnerObj, ladderResults);
+        finishLadderGame(theme, ladderMappings, ladderResults);
       }, 2000);
     }
 
@@ -747,7 +774,7 @@
 
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       
-      const finalResult = `${emoji} ${resultString}`;
+      const finalResult = `${emoji} ${winnerAnswer}`;
       
       let allEntriesObj = {};
       names.forEach((_, i) => {
@@ -759,26 +786,43 @@
       saveGameData(theme, winnerName, finalResult, newItem);
     }
 
-    function finishLadderGame(theme, winner, ladderResults) {
-      const winnerName = winner.personName;
-      const winnerAnswer = winner.text;
-
+    function finishLadderGame(theme, ladderMappings, ladderResults) {
       let emoji = getThemeEmoji(theme);
-      const resultString = `${winnerAnswer}`; 
       
       document.getElementById('ladder-animation-box').style.display = 'none';
-      document.getElementById('winner-display').style.display = 'block';
-      document.getElementById('winner-img').src = avatars[winner.personIdx];
-      document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
+      
+      // 사다리 전체 결과 카드 리스트 렌더링
+      const resCardsContainer = document.getElementById('ladder-result-cards');
+      resCardsContainer.innerHTML = '';
+
+      let summaryTextList = [];
+      for (const [pName, resVal] of Object.entries(ladderMappings)) {
+        const pIdx = names.indexOf(pName);
+        const avatarUrl = pIdx !== -1 ? avatars[pIdx] : avatars[0];
+        summaryTextList.push(`${pName}:${resVal}`);
+
+        resCardsContainer.innerHTML += `
+          <div class="ladder-result-card">
+            <div class="ladder-result-person">
+              <img src="${avatarUrl}">
+              <span>${pName}</span>
+            </div>
+            <div class="ladder-result-val">${resVal}</div>
+          </div>
+        `;
+      }
+
+      document.getElementById('ladder-result-display').style.display = 'block';
       
       const spinBtn = document.getElementById('btn-spin');
       if (spinBtn) spinBtn.style.display = 'none';
 
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       
-      const finalResult = `${emoji} ${resultString}`;
-      const newItem = { theme: theme, result: finalResult, ladderResults: ladderResults };
-      saveGameData(theme, winnerName, finalResult, newItem);
+      const finalResult = `${emoji} ${summaryTextList.join(' / ')}`;
+      const newItem = { theme: theme, result: finalResult, ladderMappings: ladderMappings, ladderResults: ladderResults };
+      
+      saveGameData(theme, "전체 매칭 완료", finalResult, newItem);
     }
 
     function getThemeEmoji(theme) {
