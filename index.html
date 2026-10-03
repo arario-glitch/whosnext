@@ -81,7 +81,11 @@
     .tab-btn { flex: 1; padding: 10px; font-size: 14px; font-weight: 700; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; border-radius: 12px; cursor: pointer; transition: 0.2s; }
     .tab-btn.active { background: #6c5ce7; color: white; border-color: #6c5ce7; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3); }
 
-    .profiles-container { display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto; padding-right: 4px; margin: 16px 0; text-align: left; }
+    /* 룰렛용 & 사다리타기용 입력 영역 컨테이너 전환 */
+    .section-area { display: none; text-align: left; margin: 16px 0; max-height: 250px; overflow-y: auto; }
+    .section-area.active { display: block; }
+
+    .profiles-container { display: flex; flex-direction: column; gap: 12px; }
     .profile-group { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; }
     .modal-content.dark-cinema .profile-group { background: #18181b; border-color: #27272a; }
     
@@ -98,14 +102,25 @@
     .btn-item-add { background: #e2e8f0; border: none; border-radius: 8px; padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer; color: #475569; margin-top: 4px; align-self: flex-start; }
     .btn-item-del { background: #ff7675; border: none; border-radius: 6px; color: white; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+    /* 사다리타기 전용 UI 스타일 */
+    .ladder-setup-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    .ladder-setup-box h4 { margin: 0 0 8px 0; font-size: 13px; color: #475569; }
+    .ladder-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ladder-results-grid input { width: 100%; padding: 10px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; outline: none; }
+
+    .participants-grid { display: flex; justify-content: space-between; gap: 6px; }
+    .participant-chip { flex: 1; background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer; transition: 0.2s; }
+    .participant-chip.selected { border-color: #6c5ce7; background: #f3f0ff; }
+    .participant-chip img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-bottom: 4px; }
+    .participant-chip span { display: block; font-size: 11px; font-weight: 700; color: #334155; }
+
     #roulette-container { position: relative; width: 220px; height: 220px; margin: 16px auto; }
     canvas { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.12); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); }
     .pointer { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #ff4757; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
     
-    /* 사다리타기 화면 스타일 */
-    #ladder-container { display: none; width: 100%; height: 220px; margin: 16px auto; background: #f8fafc; border-radius: 16px; border: 1px solid #cbd5e1; position: relative; overflow: hidden; padding: 10px; }
-    .modal-content.dark-cinema #ladder-container { background: #18181b; border-color: #3f3f46; }
-    
+    #ladder-animation-box { display: none; width: 100%; height: 160px; margin: 16px auto; background: #1e293b; border-radius: 16px; align-items: center; justify-content: center; }
+    #ladder-anim-text { font-size: 20px; font-weight: 900; color: #00ffcc; font-family: 'Orbit', monospace; }
+
     #buff-banner { display: none; font-size: 13px; font-weight: 800; margin: 8px 0; padding: 8px 10px; border-radius: 10px; animation: bounceText 0.5s infinite alternate; }
     @keyframes bounceText { from { transform: scale(1); } to { transform: scale(1.03); } }
 
@@ -166,7 +181,7 @@
     <button class="btn" style="background: #dfe6e9 !important; color: #636e72 !important;" onclick="showScreen('screen-category')">뒤로가기</button>
   </div>
 
-  <!-- 복불복 실행 모달 (룰렛 & 사다리타기 선택 가능) -->
+  <!-- 복불복 실행 모달 -->
   <div id="modal-roulette" class="modal-overlay">
     <div class="modal-content">
       <h3 id="modal-title">🎲 복불복 진행</h3>
@@ -180,7 +195,30 @@
 
       <div id="buff-banner"></div>
 
-      <div class="profiles-container" id="profiles-container"></div>
+      <!-- 1. 룰렛 전용 입력 영역 -->
+      <div id="area-roulette" class="section-area active">
+        <div class="profiles-container" id="profiles-container"></div>
+      </div>
+
+      <!-- 2. 사다리타기 전용 입력 영역 (결과 4개 + 참가자 선택) -->
+      <div id="area-ladder" class="section-area">
+        <div class="ladder-setup-box">
+          <h4>🎁 당첨 결과 4개 입력</h4>
+          <div class="ladder-results-grid">
+            <input type="text" class="ladder-res" placeholder="결과 1 (예: 꽝)">
+            <input type="text" class="ladder-res" placeholder="결과 2 (예: 당첨)">
+            <input type="text" class="ladder-res" placeholder="결과 3 (예: 벌칙)">
+            <input type="text" class="ladder-res" placeholder="결과 4 (예: 면제)">
+          </div>
+        </div>
+
+        <div class="ladder-setup-box">
+          <h4>👥 사다리 탈 사람 선택 (복수 선택 가능)</h4>
+          <div class="participants-grid" id="participants-grid">
+            <!-- JS로 동적 생성 -->
+          </div>
+        </div>
+      </div>
 
       <!-- 룰렛 판 -->
       <div id="roulette-container">
@@ -188,12 +226,13 @@
         <canvas id="wheel" width="220" height="220"></canvas>
       </div>
 
-      <!-- 사다리타기 시각화 화면 -->
-      <div id="ladder-container">
-        <canvas id="ladder-canvas" width="360" height="200" style="width:100%; height:100%;"></canvas>
+      <!-- 사다리타기 연출 박스 -->
+      <div id="ladder-animation-box">
+        <div id="ladder-anim-text">🪜 LADDER RUN...</div>
       </div>
 
       <div id="winner-display"><img id="winner-img" src=""><div id="winner-text"></div></div>
+      
       <div class="modal-btns">
         <button class="btn" style="background: #ff7675 !important; color: white !important; width: 100%;" onclick="closeRoulette()">❌ 닫기</button>
         <button id="btn-spin" class="btn" style="background: #a29bfe !important; color: white !important; flex: 2; width: 100%;" onclick="startAction()">🚀 START!</button>
@@ -240,6 +279,7 @@
     ];
     const colors = ['#ff7675', '#55efc4', '#74b9ff', '#ffeaa7'];
     let personWeights = [1, 1, 1, 1];
+    let selectedParticipants = [true, true, true, true]; // 기본 전원 선택
 
     window.addEventListener('firebase-initialized', () => {
       const loadingEl = document.getElementById('loading');
@@ -309,7 +349,14 @@
       container.innerHTML = '';
       const resultStr = itemObj.result || "";
 
-      if (itemObj.allEntries) {
+      if (itemObj.ladderResults) {
+        // 사다리타기 상세 기록 출력
+        container.innerHTML += `<div class="list-item" style="background:#f8fafc; font-weight:bold; justify-content:center;">🪜 사다리타기 결과</div>`;
+        const results = itemObj.ladderResults;
+        results.forEach((res, idx) => {
+          container.innerHTML += `<div class="list-item"><strong>결과 ${idx+1} :</strong> <span>${res}</span></div>`;
+        });
+      } else if (itemObj.allEntries) {
         const allEntries = itemObj.allEntries;
         names.forEach((name, i) => {
           const userItems = allEntries[i] || [];
@@ -428,10 +475,12 @@
         spinBtn.innerText = "🚀 START!";
       }
 
-      switchMode('roulette'); // 기본은 룰렛 모드
+      switchMode('roulette');
       personWeights = [1, 1, 1, 1];
+      selectedParticipants = [true, true, true, true];
       document.getElementById('theme').value = '';
       renderProfileInputs();
+      renderLadderParticipants();
     }
 
     // 모드 전환 (룰렛 <-> 사다리타기)
@@ -439,21 +488,20 @@
       currentMode = mode;
       const rTab = document.getElementById('tab-roulette');
       const lTab = document.getElementById('tab-ladder');
+      const rArea = document.getElementById('area-roulette');
+      const lArea = document.getElementById('area-ladder');
       const rContainer = document.getElementById('roulette-container');
-      const lContainer = document.getElementById('ladder-container');
+      const lAnimBox = document.getElementById('ladder-animation-box');
 
       if (mode === 'roulette') {
-        rTab.classList.add('active');
-        lTab.classList.remove('active');
-        rContainer.style.display = 'block';
-        lContainer.style.display = 'none';
+        rTab.classList.add('active'); lTab.classList.remove('active');
+        rArea.classList.add('active'); lArea.classList.remove('active');
+        rContainer.style.display = 'block'; lAnimBox.style.display = 'none';
         drawWheel();
       } else {
-        lTab.classList.add('active');
-        rTab.classList.remove('active');
-        rContainer.style.display = 'none';
-        lContainer.style.display = 'block';
-        drawLadderPreview();
+        lTab.classList.add('active'); rTab.classList.remove('active');
+        lArea.classList.add('active'); rArea.classList.remove('active');
+        rContainer.style.display = 'none'; lAnimBox.style.display = 'none';
       }
     }
 
@@ -465,12 +513,12 @@
         container.innerHTML += `
           <div class="profile-group">
             <div class="profile-info">
-              <img id="img-opt${i+1}" src="${avatars[i]}">
+              <img src="${avatars[i]}">
               <span>${name}</span>
             </div>
             <div class="input-list" id="input-list-${i}">
               <div class="input-row">
-                <input type="text" class="p-input-${i}" placeholder="항목 입력" oninput="onInputChange()">
+                <input type="text" class="p-input-${i}" placeholder="항목 입력" oninput="drawWheel()">
               </div>
               <button class="btn-item-add" onclick="addInputRow(${i})">+ 항목추가</button>
             </div>
@@ -479,9 +527,24 @@
       });
     }
 
-    function onInputChange() {
-      if (currentMode === 'roulette') drawWheel();
-      else drawLadderPreview();
+    // 사다리 탈 사람 선택 그리드 렌더링
+    function renderLadderParticipants() {
+      const grid = document.getElementById('participants-grid');
+      grid.innerHTML = '';
+      names.forEach((name, i) => {
+        const isSel = selectedParticipants[i];
+        grid.innerHTML += `
+          <div class="participant-chip ${isSel ? 'selected' : ''}" onclick="toggleParticipant(${i})">
+            <img src="${avatars[i]}">
+            <span>${name}</span>
+          </div>
+        `;
+      });
+    }
+
+    function toggleParticipant(idx) {
+      selectedParticipants[idx] = !selectedParticipants[idx];
+      renderLadderParticipants();
     }
 
     function addInputRow(personIdx) {
@@ -491,16 +554,16 @@
       const newRow = document.createElement('div');
       newRow.className = 'input-row';
       newRow.innerHTML = `
-        <input type="text" class="p-input-${personIdx}" placeholder="항목 입력" oninput="onInputChange()">
+        <input type="text" class="p-input-${personIdx}" placeholder="항목 입력" oninput="drawWheel()">
         <button class="btn-item-del" onclick="removeInputRow(this)">×</button>
       `;
       listEl.insertBefore(newRow, addBtn);
-      onInputChange();
+      drawWheel();
     }
 
     function removeInputRow(btn) {
       btn.parentElement.remove();
-      onInputChange();
+      drawWheel();
     }
 
     function closeRoulette() { document.getElementById('modal-roulette').style.display = 'none'; }
@@ -555,34 +618,31 @@
       });
     }
 
-    // 사다리타기 미리보기 그리기
-    const ladderCanvas = document.getElementById('ladder-canvas');
-    const lCtx = ladderCanvas.getContext('2d');
-    function drawLadderPreview() {
-      lCtx.clearRect(0, 0, 360, 200);
-      lCtx.fillStyle = '#94a3b8'; lCtx.font = "bold 14px sans-serif"; lCtx.textAlign = "center";
-      lCtx.fillText("🪜 사다리타기 준비 완료!", 180, 80);
-      lCtx.font = "12px sans-serif";
-      lCtx.fillText("START 버튼을 누르면 사다리가 내려갑니다!", 180, 110);
-    }
-
-    // 통합 실행 함수 (START 버튼 클릭 시)
     function startAction() {
       if (isSpinning) return;
       const theme = document.getElementById('theme').value;
-      let items = getAllFlatItems();
-
       if (!theme) { showAlert("주제를 입력해주세요!"); return; }
-      if (items.length < 2) { showAlert("최소 2개 이상의 항목을 입력해주세요!"); return; }
 
       if (currentMode === 'roulette') {
+        let items = getAllFlatItems();
+        if (items.length < 2) { showAlert("최소 2개 이상의 항목을 입력해주세요!"); return; }
         spinRoulette(theme, items);
       } else {
-        runLadder(theme, items);
+        // 사다리타기 유효성 검사
+        const resInputs = document.querySelectorAll('.ladder-res');
+        let ladderResults = [];
+        resInputs.forEach(input => {
+          if (input.value.trim() !== '') ladderResults.push(input.value.trim());
+        });
+        if (ladderResults.length < 2) { showAlert("최소 2개 이상의 결과를 입력해주세요!"); return; }
+
+        const activeNames = names.filter((_, i) => selectedParticipants[i]);
+        if (activeNames.length === 0) { showAlert("사다리를 탈 참가자를 최소 1명 이상 선택해주세요!"); return; }
+
+        runLadder(theme, ladderResults, activeNames);
       }
     }
 
-    // 룰렛 실행 로직
     function spinRoulette(theme, items) {
       isSpinning = true;
       const spinBtn = document.getElementById('btn-spin');
@@ -632,51 +692,52 @@
           if (targetWeight <= accumulated) { winner = it; break; }
         }
 
-        finishGame(theme, winner, items);
+        finishRouletteGame(theme, winner, items);
       }, 3000);
     }
 
-    // 사다리타기 실행 로직
-    function runLadder(theme, items) {
+    function runLadder(theme, ladderResults, activeNames) {
       isSpinning = true;
       const spinBtn = document.getElementById('btn-spin');
       if (spinBtn) spinBtn.disabled = true;
 
-      // 사다리 타는 애니메이션 연출 (화면 깜빡임 등)
+      document.getElementById('area-ladder').style.display = 'none';
+      const animBox = document.getElementById('ladder-animation-box');
+      animBox.style.display = 'flex';
+      
+      const animText = document.getElementById('ladder-anim-text');
       let count = 0;
       const ladderInterval = setInterval(() => {
-        lCtx.clearRect(0, 0, 360, 200);
-        lCtx.fillStyle = '#6c5ce7'; lCtx.font = "bold 16px 'Orbit', monospace"; lCtx.textAlign = "center";
-        lCtx.fillText(`🪜 사다리 내려가는 중${'.'.repeat((count % 3) + 1)}`, 180, 100);
+        animText.innerHTML = `🪜 사다리 타는 중${'.'.repeat((count % 3) + 1)}`;
         count++;
       }, 300);
 
       setTimeout(() => {
         clearInterval(ladderInterval);
-        // 무작위 당첨자 추첨
-        const winner = items[Math.floor(Math.random() * items.length)];
-        finishGame(theme, winner, items);
+        
+        // 무작위로 참가자 한 명과 결과 한 개 매칭
+        const chosenPersonName = activeNames[Math.floor(Math.random() * activeNames.length)];
+        const chosenResult = ladderResults[Math.floor(Math.random() * ladderResults.length)];
+        const personIdx = names.indexOf(chosenPersonName);
+
+        const winnerObj = {
+          personIdx: personIdx,
+          personName: chosenPersonName,
+          text: chosenResult
+        };
+
+        finishLadderGame(theme, winnerObj, ladderResults);
       }, 2000);
     }
 
-    // 공통 결과 처리 및 저장 함수
-    function finishGame(theme, winner, items) {
+    function finishRouletteGame(theme, winner, items) {
       const winnerName = winner.personName;
       const winnerAnswer = winner.text;
 
-      let emoji = '🎯'; 
-      const t = theme.toLowerCase();
-      if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
-      else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
-      else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️'; }
-      else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
-      else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
-      else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
-
+      let emoji = getThemeEmoji(theme);
       const resultString = `${winnerAnswer}`; 
       
       document.getElementById('roulette-container').style.display = 'none';
-      document.getElementById('ladder-container').style.display = 'none';
       document.getElementById('winner-display').style.display = 'block';
       document.getElementById('winner-img').src = avatars[winner.personIdx];
       document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
@@ -695,7 +756,44 @@
       });
 
       const newItem = { theme: theme, result: finalResult, allEntries: allEntriesObj };
+      saveGameData(theme, winnerName, finalResult, newItem);
+    }
 
+    function finishLadderGame(theme, winner, ladderResults) {
+      const winnerName = winner.personName;
+      const winnerAnswer = winner.text;
+
+      let emoji = getThemeEmoji(theme);
+      const resultString = `${winnerAnswer}`; 
+      
+      document.getElementById('ladder-animation-box').style.display = 'none';
+      document.getElementById('winner-display').style.display = 'block';
+      document.getElementById('winner-img').src = avatars[winner.personIdx];
+      document.getElementById('winner-text').innerHTML = `🎉 ${winnerName} 당첨!<br>${emoji} [${winnerAnswer}]`;
+      
+      const spinBtn = document.getElementById('btn-spin');
+      if (spinBtn) spinBtn.style.display = 'none';
+
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+      
+      const finalResult = `${emoji} ${resultString}`;
+      const newItem = { theme: theme, result: finalResult, ladderResults: ladderResults };
+      saveGameData(theme, winnerName, finalResult, newItem);
+    }
+
+    function getThemeEmoji(theme) {
+      let emoji = '🎯'; 
+      const t = theme.toLowerCase();
+      if (t.includes('총무') || t.includes('돈') || t.includes('비용') || t.includes('간식비') || t.includes('정산')) { emoji = '💰'; }
+      else if (t.includes('숙소') || t.includes('호텔') || t.includes('방') || t.includes('잠') || t.includes('펜션')) { emoji = '🏠'; }
+      else if (t.includes('메뉴') || t.includes('점심') || t.includes('저녁') || t.includes('밥') || t.includes('먹') || t.includes('식사') || t.includes('안주')) { emoji = '🍽️'; }
+      else if (t.includes('카페') || t.includes('커피') || t.includes('음료') || t.includes('디저트')) { emoji = '☕'; }
+      else if (t.includes('이동') || t.includes('차') || t.includes('운전') || t.includes('주차') || t.includes('택시')) { emoji = '🚗'; }
+      else if (t.includes('지역') || t.includes('국가') || t.includes('장소') || t.includes('어디')) { emoji = '🚩'; }
+      return emoji;
+    }
+
+    function saveGameData(theme, winnerName, finalResult, newItem) {
       const now = new Date();
       const timestampStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
